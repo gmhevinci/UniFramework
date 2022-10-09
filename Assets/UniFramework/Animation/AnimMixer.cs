@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Animations;
-using UniFramework.Core;
+using UniFramework.Utility;
 
 namespace UniFramework.Animation
 {
