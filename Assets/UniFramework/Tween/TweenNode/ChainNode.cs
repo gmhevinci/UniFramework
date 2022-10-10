@@ -7,10 +7,17 @@ namespace UniFramework.Tween
 	/// </summary>
 	public abstract class ChainNode : ITweenNode, ITweenChain
 	{
-		private System.Action _onDispose = null;
 		protected List<ITweenNode> _nodes = new List<ITweenNode>();
 
-		public bool IsDone { protected set; get; } = false;
+		private System.Action _onBegin = null;
+		private System.Action _onComplete = null;
+		private System.Action _onDispose = null;
+
+		/// <summary>
+		/// 节点状态
+		/// </summary>
+		public ETweenStatus Status { private set; get; } = ETweenStatus.Idle;
+
 
 		public void AddNode(ITweenNode node)
 		{
@@ -24,6 +31,16 @@ namespace UniFramework.Tween
 				AddNode(node);
 			}
 		}
+		public ITweenChain SetOnBegin(System.Action onBegin)
+		{
+			_onBegin = onBegin;
+			return this;
+		}
+		public ITweenChain SetOnComplete(System.Action onComplete)
+		{
+			_onComplete = onComplete;
+			return this;
+		}
 		public ITweenChain SetDispose(System.Action onDispose)
 		{
 			_onDispose = onDispose;
@@ -32,7 +49,21 @@ namespace UniFramework.Tween
 
 		void ITweenNode.OnUpdate(float deltaTime)
 		{
-			UpdateChain(deltaTime);
+			if (Status == ETweenStatus.Idle)
+			{
+				Status = ETweenStatus.Runing;
+				_onBegin?.Invoke();
+			}
+
+			if (Status == ETweenStatus.Runing)
+			{
+				bool isComplete = UpdateChainNodes(deltaTime);
+				if (isComplete)
+				{
+					Status = ETweenStatus.Completed;
+					_onComplete?.Invoke();
+				}
+			}
 		}
 		void ITweenNode.OnDispose()
 		{
@@ -43,9 +74,13 @@ namespace UniFramework.Tween
 			_nodes.Clear();
 			_onDispose?.Invoke();
 		}
-		void ITweenNode.Kill()
+		void ITweenNode.Abort()
 		{
-			IsDone = true;
+			foreach (var node in _nodes)
+			{
+				node.Abort();
+			}
+			Status = ETweenStatus.Abort;
 		}
 
 		ITweenChain ITweenChain.Append(ITweenNode node)
@@ -54,6 +89,6 @@ namespace UniFramework.Tween
 			return this;
 		}
 
-		protected abstract void UpdateChain(float deltaTime);
+		protected abstract bool UpdateChainNodes(float deltaTime);
 	}
 }

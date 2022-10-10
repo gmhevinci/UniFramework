@@ -7,7 +7,7 @@ namespace UnityEngine
         public static FloatTween TweenAlpha(this CanvasGroup obj, float duration, float from, float to)
         {
             FloatTween node = FloatTween.Allocate(duration, from, to);
-            node.SetUpdate((result) => { obj.alpha = result; });
+            node.SetOnUpdate((result) => { obj.alpha = result; });
             return node;
         }
         public static FloatTween TweenAlphaTo(this CanvasGroup obj, float duration, float to)

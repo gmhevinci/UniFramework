@@ -16,7 +16,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain Until(this ITweenChain chain, System.Func<bool> condition)
 		{
-			return chain.Append(TweenAllocate.Until(condition));
+			return chain.Append(UniTween.AllocateUntil(condition));
 		}
 
 		/// <summary>
@@ -24,7 +24,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain Execute(this ITweenChain chain, System.Action execute)
 		{
-			return chain.Append(TweenAllocate.Execute(execute));
+			return chain.Append(UniTween.AllocateExecute(execute));
 		}
 
 
@@ -33,7 +33,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain Delay(this ITweenChain chain, float delay, System.Action triggerCallback = null)
 		{
-			return chain.Append(TweenAllocate.Delay(delay, triggerCallback));
+			return chain.Append(UniTween.AllocateDelay(delay, triggerCallback));
 		}
 
 		/// <summary>
@@ -42,7 +42,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain Repeat(this ITweenChain chain, float delay, float interval, System.Action triggerCallback = null)
 		{
-			return chain.Append(TweenAllocate.Repeat(delay, interval, triggerCallback));
+			return chain.Append(UniTween.AllocateRepeat(delay, interval, triggerCallback));
 		}
 
 		/// <summary>
@@ -50,7 +50,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain Repeat(this ITweenChain chain, float delay, float interval, float duration, System.Action triggerCallback = null)
 		{
-			return chain.Append(TweenAllocate.Repeat(delay, interval, duration, triggerCallback));
+			return chain.Append(UniTween.AllocateRepeat(delay, interval, duration, triggerCallback));
 		}
 
 		/// <summary>
@@ -58,7 +58,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain Repeat(this ITweenChain chain, float delay, float interval, long maxTriggerCount, System.Action triggerCallback = null)
 		{
-			return chain.Append(TweenAllocate.Repeat(delay, interval, maxTriggerCount, triggerCallback));
+			return chain.Append(UniTween.AllocateRepeat(delay, interval, maxTriggerCount, triggerCallback));
 		}
 
 		/// <summary>
@@ -66,7 +66,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain Duration(this ITweenChain chain, float delay, float duration, System.Action triggerCallback = null)
 		{
-			return chain.Append(TweenAllocate.Duration(delay, duration, triggerCallback));
+			return chain.Append(UniTween.AllocateDuration(delay, duration, triggerCallback));
 		}
 	}
 }

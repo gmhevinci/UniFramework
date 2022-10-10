@@ -3,10 +3,13 @@ namespace UniFramework.Tween
 {
 	public interface ITweenNode
 	{
-		bool IsDone { get; }
+		/// <summary>
+		/// 节点状态
+		/// </summary>
+		ETweenStatus Status { get; }
 
 		void OnUpdate(float deltaTime);
 		void OnDispose();
-		void Kill();
+		void Abort();
 	}
 }

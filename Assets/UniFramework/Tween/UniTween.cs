@@ -8,33 +8,9 @@ namespace UniFramework.Tween
 	/// </summary>
 	public static class UniTween
 	{
-		private class TweenWrapper
-		{
-			public int GroupID { private set; get; }
-			public long TweenUID { private set; get; }
-			public ITweenNode TweenRoot { private set; get; }
-			public UnityEngine.Object SafeObject { private set; get; }
-			private readonly bool _safeMode = false;
-
-			public TweenWrapper(int groupID, long tweenUID, ITweenNode tweenRoot, UnityEngine.Object safeObject)
-			{
-				GroupID = groupID;
-				TweenUID = tweenUID;
-				TweenRoot = tweenRoot;
-				SafeObject = safeObject;
-				_safeMode = safeObject != null;
-			}
-			public bool IsSafe()
-			{
-				if (_safeMode == false)
-					return true;
-				return SafeObject != null;
-			}
-		}
-
-		private static int StaticTweenUID = 0;
-		private static readonly List<TweenWrapper> _wrappers = new List<TweenWrapper>(1000);
-		private static readonly List<TweenWrapper> _remover = new List<TweenWrapper>(1000);
+		private static readonly List<TweenHandle> _tweens = new List<TweenHandle>(1000);
+		private static readonly List<TweenHandle> _newer = new List<TweenHandle>(1000);
+		private static readonly List<TweenHandle> _remover = new List<TweenHandle>(1000);
 
 		/// <summary>
 		/// 是否忽略时间戳缩放
@@ -46,162 +22,246 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static float PlaySpeed { set; get; } = 1f;
 
+
+		/// <summary>
+		/// 更新补间动画管理器
+		/// </summary>
 		internal static void Update()
 		{
 			_remover.Clear();
 
-			// 更新所有补间动画
-			float delatTime = IgnoreTimeScale ? UnityEngine.Time.unscaledDeltaTime : UnityEngine.Time.deltaTime;
-			delatTime *= PlaySpeed;
-			for (int i = 0; i < _wrappers.Count; i++)
+			// 添加新的补间动画
+			if (_newer.Count > 0)
 			{
-				var wrapper = _wrappers[i];
-				if (wrapper.IsSafe() == false)
-				{
-					wrapper.TweenRoot.Kill();
-					_remover.Add(wrapper);
-					continue;
-				}
+				_tweens.AddRange(_newer);
+				_newer.Clear();
+			}
 
-				if (wrapper.TweenRoot.IsDone)
-					_remover.Add(wrapper);
+			// 更新所有补间动画
+			float deltaTime = IgnoreTimeScale ? UnityEngine.Time.unscaledDeltaTime : UnityEngine.Time.deltaTime;
+			deltaTime *= PlaySpeed;
+			for (int i = 0; i < _tweens.Count; i++)
+			{
+				var handle = _tweens[i];
+				if (handle.IsCanRemove())
+					_remover.Add(handle);
 				else
-					wrapper.TweenRoot.OnUpdate(delatTime);
+					handle.Update(deltaTime);
 			}
 
 			// 移除完成的补间动画
 			for (int i = 0; i < _remover.Count; i++)
 			{
-				var wrapper = _remover[i];
-				_wrappers.Remove(wrapper);
-				wrapper.TweenRoot.OnDispose();
+				var handle = _remover[i];
+				_tweens.Remove(handle);
+				handle.Dispose();
 			}
 		}
-		
+
 		/// <summary>
 		/// 播放一个补间动画
 		/// </summary>
 		/// <param name="tweenRoot">补间根节点</param>
-		/// <param name="go">游戏对象</param>
-		/// <returns>补间动画唯一ID</returns>
-		public static long Play(ITweenNode tweenRoot, UnityEngine.GameObject go = null)
+		/// <param name="unityObject">游戏对象</param>
+		public static TweenHandle Play(ITweenNode tweenRoot, UnityEngine.Object unityObject = null)
 		{
-			int groupID = 0;
-			if (go != null)
-				groupID = go.GetInstanceID();
-			return CreateTween(tweenRoot, go, groupID);
+			if (tweenRoot == null)
+				throw new System.ArgumentNullException();
+
+			TweenHandle handle = new TweenHandle(tweenRoot, unityObject);
+			_newer.Add(handle);
+			return handle;
 		}
 
 		/// <summary>
 		/// 播放一个补间动画
 		/// </summary>
 		/// <param name="tweenChain">补间根节点</param>
-		/// <param name="go">游戏对象</param>
-		/// <returns>补间动画唯一ID</returns>
-		public static long Play(ITweenChain tweenChain, UnityEngine.GameObject go = null)
+		/// <param name="unityObject">游戏对象</param>
+		public static TweenHandle Play(ITweenChain tweenChain, UnityEngine.Object unityObject = null)
 		{
 			ITweenNode tweenRoot = tweenChain as ITweenNode;
 			if (tweenRoot == null)
 				throw new System.InvalidCastException();
 
-			return Play(tweenRoot, go);
+			return Play(tweenRoot, unityObject);
 		}
 
 		/// <summary>
 		/// 播放一个补间动画
 		/// </summary>
-		/// <param name="tweenChain">补间根节点</param>
-		/// <param name="go">游戏对象</param>
-		/// <returns>补间动画唯一ID</returns>
-		public static long Play(ChainNode chainNode, UnityEngine.GameObject go = null)
+		/// <param name="chainNode">补间根节点</param>
+		/// <param name="unityObject">游戏对象</param>
+		public static TweenHandle Play(ChainNode chainNode, UnityEngine.Object unityObject = null)
 		{
 			ITweenNode tweenRoot = chainNode as ITweenNode;
 			if (tweenRoot == null)
 				throw new System.InvalidCastException();
 
-			return Play(tweenRoot, go);
+			return Play(tweenRoot, unityObject);
 		}
 
 		/// <summary>
-		/// 中途关闭一个补间动画
+		/// 中途关闭补间动画
 		/// </summary>
-		/// <param name="tweenUID">补间动画唯一ID</param>
-		public static void Kill(long tweenUID)
+		public static void Abort(TweenHandle tweenHandle)
 		{
-			TweenWrapper wrapper = GetTweenWrapper(tweenUID);
-			if (wrapper != null)
-				wrapper.TweenRoot.Kill();
+			if (tweenHandle != null)
+				tweenHandle.Abort();
 		}
 
 		/// <summary>
-		/// 中途关闭一组补间动画
+		/// 中途关闭补间动画
 		/// </summary>
-		/// <param name="go">游戏对象</param>
-		public static void Kill(UnityEngine.GameObject go)
+		/// <param name="unityObject">游戏对象</param>
+		public static void Abort(UnityEngine.Object unityObject)
 		{
-			int groupID = go.GetInstanceID();
-			TweenWrapper wrapper = GetTweenWrapper(groupID);
-			if (wrapper != null)
-				wrapper.TweenRoot.Kill();
+			int instanceID = unityObject.GetInstanceID();
+
+			for (int i = 0; i < _tweens.Count; i++)
+			{
+				var handle = _tweens[i];
+				if (handle.InstanceID == instanceID)
+				{
+					handle.Abort();
+				}
+			}
+
+			for (int i = 0; i < _newer.Count; i++)
+			{
+				var handle = _newer[i];
+				if (handle.InstanceID == instanceID)
+				{
+					handle.Abort();
+				}
+			}
+		}
+
+
+		#region Tween Allocate
+		/// <summary>
+		/// 执行节点
+		/// </summary>
+		public static ExecuteNode AllocateExecute(System.Action execute)
+		{
+			ExecuteNode node = new ExecuteNode();
+			node.SetExecute(execute);
+			return node;
+		}
+
+		/// <summary>
+		/// 条件等待节点
+		/// </summary>
+		public static UntilNode AllocateUntil(System.Func<bool> condition)
+		{
+			UntilNode node = new UntilNode();
+			node.SetCondition(condition);
+			return node;
 		}
 
 
 		/// <summary>
-		/// 创建补间动画
+		/// 并行执行的复合节点
 		/// </summary>
-		/// <param name="tweenRoot">补间根节点</param>
-		/// <param name="safeObject">安全游戏对象：如果安全游戏对象被销毁，补间动画会自动终止</param>
-		/// <param name="groupID">补间组ID</param>
-		/// <returns>补间动画唯一ID</returns>
-		private static long CreateTween(ITweenNode tweenRoot, UnityEngine.Object safeObject, int groupID = 0)
+		public static ParallelNode AllocateParallel(params ITweenNode[] nodes)
 		{
-			if (tweenRoot == null)
-			{
-				UniLogger.Warning("Tween root is null.");
-				return -1;
-			}
-
-			if (Contains(tweenRoot))
-			{
-				UniLogger.Warning("Tween root is running.");
-				return -1;
-			}
-
-			long tweenUID = ++StaticTweenUID;
-			TweenWrapper wrapper = new TweenWrapper(groupID, tweenUID, tweenRoot, safeObject);
-			_wrappers.Add(wrapper);
-			return wrapper.TweenUID;
+			ParallelNode node = new ParallelNode();
+			node.AddNode(nodes);
+			return node;
 		}
 
-		private static bool Contains(ITweenNode tweenRoot)
+		/// <summary>
+		/// 顺序执行的复合节点
+		/// </summary>
+		public static SequenceNode AllocateSequence(params ITweenNode[] nodes)
 		{
-			for (int i = 0; i < _wrappers.Count; i++)
-			{
-				var wrapper = _wrappers[i];
-				if (wrapper.TweenRoot == tweenRoot)
-					return true;
-			}
-			return false;
+			SequenceNode node = new SequenceNode();
+			node.AddNode(nodes);
+			return node;
 		}
-		private static TweenWrapper GetTweenWrapper(long tweenUID)
+
+		/// <summary>
+		/// 随机执行的复合节点
+		/// </summary>
+		public static SelectorNode AllocateSelector(params ITweenNode[] nodes)
 		{
-			for (int i = 0; i < _wrappers.Count; i++)
-			{
-				var wrapper = _wrappers[i];
-				if (wrapper.TweenUID == tweenUID)
-					return wrapper;
-			}
-			return null;
+			SelectorNode node = new SelectorNode();
+			node.AddNode(nodes);
+			return node;
 		}
-		private static TweenWrapper GetTweenWrapper(int groupID)
+
+
+		/// <summary>
+		/// 延迟计时节点
+		/// </summary>
+		/// <param name="delay">延迟时间</param>
+		/// <param name="trigger">触发事件</param>
+		public static TimerNode AllocateDelay(float delay, System.Action trigger = null)
 		{
-			for (int i = 0; i < _wrappers.Count; i++)
-			{
-				var wrapper = _wrappers[i];
-				if (wrapper.GroupID != 0 && wrapper.GroupID == groupID)
-					return wrapper;
-			}
-			return null;
+			UniTimer timer = UniTimer.CreateOnceTimer(delay);
+			TimerNode node = new TimerNode(timer);
+			node.SetTrigger(trigger);
+			return node;
 		}
+
+		/// <summary>
+		/// 重复计时节点
+		/// 注意：该节点为无限时长
+		/// </summary>
+		/// <param name="delay">延迟时间</param>
+		/// <param name="interval">间隔时间</param>
+		/// <param name="trigger">触发事件</param>
+		public static TimerNode AllocateRepeat(float delay, float interval, System.Action trigger = null)
+		{
+			UniTimer timer = UniTimer.CreatePepeatTimer(delay, interval);
+			TimerNode node = new TimerNode(timer);
+			node.SetTrigger(trigger);
+			return node;
+		}
+
+		/// <summary>
+		/// 重复计时节点
+		/// </summary>
+		/// <param name="delay">延迟时间</param>
+		/// <param name="interval">间隔时间</param>
+		/// <param name="duration">持续时间</param>
+		/// <param name="trigger">触发事件</param>
+		public static TimerNode AllocateRepeat(float delay, float interval, float duration, System.Action trigger = null)
+		{
+			UniTimer timer = UniTimer.CreatePepeatTimer(delay, interval, duration);
+			TimerNode node = new TimerNode(timer);
+			node.SetTrigger(trigger);
+			return node;
+		}
+
+		/// <summary>
+		/// 重复计时节点
+		/// </summary>
+		/// <param name="delay">延迟时间</param>
+		/// <param name="interval">间隔时间</param>
+		/// <param name="maxTriggerCount">最大触发次数</param>
+		/// <param name="trigger">触发事件</param>
+		public static TimerNode AllocateRepeat(float delay, float interval, long maxTriggerCount, System.Action trigger = null)
+		{
+			UniTimer timer = UniTimer.CreatePepeatTimer(delay, interval, maxTriggerCount);
+			TimerNode node = new TimerNode(timer);
+			node.SetTrigger(trigger);
+			return node;
+		}
+
+		/// <summary>
+		/// 持续计时节点
+		/// </summary>
+		/// <param name="delay">延迟时间</param>
+		/// <param name="duration">持续时间</param>
+		/// <param name="trigger">触发事件</param>
+		public static TimerNode AllocateDuration(float delay, float duration, System.Action trigger = null)
+		{
+			UniTimer timer = UniTimer.CreateDurationTimer(delay, duration);
+			TimerNode node = new TimerNode(timer);
+			node.SetTrigger(trigger);
+			return node;
+		}
+		#endregion
 	}
 }

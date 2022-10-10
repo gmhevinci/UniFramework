@@ -5,31 +5,54 @@ namespace UniFramework.Tween
 	/// <summary>
 	/// 计时器节点
 	/// </summary>
-	public class TimerNode : ITweenNode
+	public sealed class TimerNode : ITweenNode
 	{
 		private readonly UniTimer _timer;
-		private readonly System.Action _triggerCallback;
-		public bool IsDone { private set; get; } = false;
+		private System.Action _trigger;
+		
+		/// <summary>
+		/// 节点状态
+		/// </summary>
+		public ETweenStatus Status { private set; get; } = ETweenStatus.Idle;
 
-		public TimerNode(UniTimer timer, System.Action triggerCallback)
+
+		public TimerNode(UniTimer timer)
 		{
 			_timer = timer;
-			_triggerCallback = triggerCallback;
 		}
+
+		/// <summary>
+		/// 设置触发方法
+		/// </summary>
+		public ITweenNode SetTrigger(System.Action trigger)
+		{
+			_trigger = trigger;
+			return this;
+		}
+
 		void ITweenNode.OnUpdate(float deltaTime)
 		{
-			if (_timer.Update(deltaTime))
+			if (Status == ETweenStatus.Idle)
 			{
-				_triggerCallback?.Invoke();
+				Status = ETweenStatus.Runing;
 			}
-			IsDone = _timer.IsOver;
+
+			if (Status == ETweenStatus.Runing)
+			{
+				if (_timer.Update(deltaTime))
+					_trigger?.Invoke();
+
+				bool result = _timer.IsOver;
+				if (result)
+					Status = ETweenStatus.Completed;
+			}
 		}
 		void ITweenNode.OnDispose()
 		{
 		}
-		void ITweenNode.Kill()
+		void ITweenNode.Abort()
 		{
-			IsDone = true;
+			Status = ETweenStatus.Abort;
 		}
 	}
 }

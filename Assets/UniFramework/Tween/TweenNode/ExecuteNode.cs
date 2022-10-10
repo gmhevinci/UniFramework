@@ -4,22 +4,44 @@ namespace UniFramework.Tween
 	/// <summary>
 	/// 执行节点
 	/// </summary>
-	public class ExecuteNode : ITweenNode
+	public sealed class ExecuteNode : ITweenNode
 	{
-		public bool IsDone { private set; get; } = false;
-		public System.Action Execute { set; get; }
+		private System.Action _execute = null;
+
+		/// <summary>
+		/// 节点状态
+		/// </summary>
+		public ETweenStatus Status { private set; get; } = ETweenStatus.Idle;
+
+
+		/// <summary>
+		/// 设置执行方法
+		/// </summary>
+		public ITweenNode SetExecute(System.Action execute)
+		{
+			_execute = execute;
+			return this;
+		}
 
 		void ITweenNode.OnUpdate(float deltaTime)
 		{
-			Execute.Invoke();
-			IsDone = true;
+			if (Status == ETweenStatus.Idle)
+			{
+				Status = ETweenStatus.Runing;
+			}
+
+			if (Status == ETweenStatus.Runing)
+			{
+				_execute?.Invoke();
+				Status = ETweenStatus.Completed;
+			}
 		}
 		void ITweenNode.OnDispose()
 		{
 		}
-		void ITweenNode.Kill()
+		void ITweenNode.Abort()
 		{
-			IsDone = true;
+			Status = ETweenStatus.Abort;
 		}
 	}
 }

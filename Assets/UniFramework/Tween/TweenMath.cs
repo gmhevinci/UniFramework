@@ -5,6 +5,18 @@ namespace UniFramework.Tween
 	public static class TweenMath
 	{
 		/// <summary>
+		/// 角度插值
+		/// </summary>
+		public static Vector3 AngleLerp(Vector3 from, Vector3 to, float progress)
+		{
+			float x = Mathf.LerpAngle(from.x, to.x, progress);
+			float y = Mathf.LerpAngle(from.y, to.y, progress);
+			float z = Mathf.LerpAngle(from.z, to.z, progress);
+			Vector3 result = new Vector3(x, y, z);
+			return result;
+		}
+
+		/// <summary>
 		/// 二阶贝塞尔曲线
 		/// </summary>
 		public static Vector3 QuadBezier(Vector3 p1, Vector3 c, Vector3 p2, float progress)

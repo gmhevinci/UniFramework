@@ -7,7 +7,7 @@ namespace UnityEngine
 		public static Vector3Tween TweenScale(this Transform obj, float duration, Vector3 from, Vector3 to)
         {
             Vector3Tween node = Vector3Tween.Allocate(duration, from, to);
-            node.SetUpdate((result) => { obj.localScale = result; });
+            node.SetOnUpdate((result) => { obj.localScale = result; });
             return node;
         }
         public static Vector3Tween TweenScaleTo(this Transform obj, float duration, Vector3 to)
@@ -23,7 +23,7 @@ namespace UnityEngine
 		{
             Vector3 position = relativeWorld ? obj.position : obj.localPosition;
             Vector3Tween node = Vector3Tween.Allocate(duration, position, position);
-            node.SetUpdate(
+            node.SetOnUpdate(
                 (result) =>
                 {
                     if (relativeWorld)
@@ -42,7 +42,7 @@ namespace UnityEngine
 		public static Vector3Tween TweenPosition(this Transform obj, float duration, Vector3 from, Vector3 to, bool relativeWorld = false)
         {
             Vector3Tween node = Vector3Tween.Allocate(duration, from, to);
-            node.SetUpdate(
+            node.SetOnUpdate(
                 (result) => 
                 {
                     if (relativeWorld)
@@ -66,7 +66,7 @@ namespace UnityEngine
         public static Vector3Tween TweenAngles(this Transform obj, float duration, Vector3 from, Vector3 to, bool relativeWorld = false)
         {
             Vector3Tween node = Vector3Tween.Allocate(duration, from, to);
-            node.SetUpdate(
+            node.SetOnUpdate(
                 (result) =>
                 {
                     if (relativeWorld)
@@ -74,6 +74,7 @@ namespace UnityEngine
                     else
                         obj.localEulerAngles = result;
                 });
+            node.SetLerp(TweenMath.AngleLerp);
             return node;
         }
         public static Vector3Tween TweenAnglesTo(this Transform obj, float duration, Vector3 to, bool relativeWorld = false)
@@ -90,7 +91,7 @@ namespace UnityEngine
         public static QuaternionTween TweenRotation(this Transform obj, float duration, Quaternion from, Quaternion to, bool relativeWorld = false)
         {
             QuaternionTween node = QuaternionTween.Allocate(duration, from, to);
-            node.SetUpdate(
+            node.SetOnUpdate(
                 (result) =>
                 {
                     if (relativeWorld)

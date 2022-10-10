@@ -5,25 +5,21 @@ namespace UniFramework.Tween
 	/// 并行执行的复合节点
 	/// 说明：节点列表并行执行，所有子节点同时执行，所有节点都结束时复合节点结束。
 	/// </summary>
-	public class ParallelNode : ChainNode
+	public sealed class ParallelNode : ChainNode
 	{
-		protected override void UpdateChain(float deltaTime)
+		protected override bool UpdateChainNodes(float deltaTime)
 		{
-			bool isAllDone = true;
+			bool isComplete = true;
 			for (int index = 0; index < _nodes.Count; index++)
 			{
 				var node = _nodes[index];
-				if (node.IsDone)
-					continue;
-
 				node.OnUpdate(deltaTime);
-				if (node.IsDone == false)
+				if (node.Status == ETweenStatus.Idle || node.Status == ETweenStatus.Runing)
 				{
-					isAllDone = false;
-					continue;
+					isComplete = false;
 				}
 			}
-			IsDone = isAllDone;
+			return isComplete;
 		}
 	}
 }

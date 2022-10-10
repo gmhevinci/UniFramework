@@ -7,7 +7,7 @@ namespace UnityEngine.UI
         public static ColorTween TweenColor(this Text obj, float duration, Color from, Color to)
         {
             ColorTween node = ColorTween.Allocate(duration, from, to);
-            node.SetUpdate((result) => { obj.color = result; });
+            node.SetOnUpdate((result) => { obj.color = result; });
             return node;
         }
         public static ColorTween TweenColorTo(this Text obj, float duration, Color to)

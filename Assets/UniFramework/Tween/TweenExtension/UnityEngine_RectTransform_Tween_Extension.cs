@@ -7,7 +7,7 @@ namespace UnityEngine
 		public static Vector2Tween TweenAnchoredPosition(this RectTransform obj, float duration, Vector2 from, Vector2 to)
         {
             Vector2Tween node = Vector2Tween.Allocate(duration, from, to);
-            node.SetUpdate(
+            node.SetOnUpdate(
                 (result) => 
                 {
                     obj.anchoredPosition = result;
