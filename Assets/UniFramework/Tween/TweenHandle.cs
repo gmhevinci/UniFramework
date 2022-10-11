@@ -1,4 +1,5 @@
-﻿
+﻿using UniFramework.Utility;
+
 namespace UniFramework.Tween
 {
 	/// <summary>
@@ -9,6 +10,7 @@ namespace UniFramework.Tween
 		private readonly ITweenNode _tweenRoot;
 		private readonly UnityEngine.Object _unityObject;
 		private readonly bool _safeMode;
+		private bool _hasException = false;
 		internal int InstanceID { private set; get; }
 
 		private TweenHandle()
@@ -32,14 +34,30 @@ namespace UniFramework.Tween
 		}
 		internal void Update(float deltaTime)
 		{
-			_tweenRoot.OnUpdate(deltaTime);
+			try
+			{
+				_tweenRoot.OnUpdate(deltaTime);
+			}
+			catch (System.Exception e)
+			{
+				_hasException = true;
+				UniLogger.Warning($"TweenNode has exception : {e}");
+			}
 		}
 		internal void Dispose()
 		{
-			_tweenRoot.OnDispose();
+			try
+			{
+				_tweenRoot.OnDispose();
+			}
+			catch(System.Exception e)
+			{
+				UniLogger.Warning($"TweenNode has exception : {e}");
+			}
 		}
 		internal bool IsCanRemove()
 		{
+			// 检测游戏对象是否销毁
 			if (_safeMode)
 			{
 				if (_unityObject == null)
@@ -47,6 +65,13 @@ namespace UniFramework.Tween
 					_tweenRoot.Abort();
 					return true;
 				}
+			}
+
+			// 检测运行过程是否发生异常
+			if (_hasException)
+			{
+				_tweenRoot.Abort();
+				return true;
 			}
 
 			if (_tweenRoot.Status == ETweenStatus.Abort || _tweenRoot.Status == ETweenStatus.Completed)

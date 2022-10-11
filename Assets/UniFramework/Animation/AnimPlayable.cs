@@ -7,10 +7,10 @@ using UniFramework.Utility;
 
 namespace UniFramework.Animation
 {
-	public class AnimPlayable
+	internal class AnimPlayable
 	{
-		private readonly List<AnimState> _states = new List<AnimState>(10);
-		private readonly List<AnimMixer> _mixers = new List<AnimMixer>(10);
+		private readonly List<AnimClip> _animClips = new List<AnimClip>(10);
+		private readonly List<AnimMixer> _animMixers = new List<AnimMixer>(10);
 
 		private PlayableGraph _graph;
 		private AnimationPlayableOutput _output;
@@ -31,9 +31,9 @@ namespace UniFramework.Animation
 			_graph.Evaluate(deltaTime);
 
 			// 更新所有层级
-			for (int i = 0; i < _mixers.Count; i++)
+			for (int i = 0; i < _animMixers.Count; i++)
 			{
-				var mixer = _mixers[i];
+				var mixer = _animMixers[i];
 				if(mixer.IsConnect)
 					mixer.Update(deltaTime);
 			}
@@ -60,16 +60,31 @@ namespace UniFramework.Animation
 		}
 
 		/// <summary>
+		/// 获取动画的状态
+		/// </summary>
+		/// <param name="name">动画名称</param>
+		/// <returns>如果动画不存在返回空</returns>
+		public AnimState GetAnimState(string name)
+		{
+			for (int i = 0; i < _animClips.Count; i++)
+			{
+				if (_animClips[i].Name == name)
+					return _animClips[i].State;
+			}
+			return null;
+		}
+
+		/// <summary>
 		/// 检测动画是否正在播放
 		/// </summary>
 		/// <param name="name">动画名称</param>
 		public bool IsPlaying(string name)
 		{
-			AnimState state = GetAnimState(name);
-			if (state == null)
+			AnimClip animClip = GetAnimClip(name);
+			if (animClip == null)
 				return false;
 
-			return state.IsConnect && state.IsPlaying;
+			return animClip.IsConnect && animClip.IsPlaying;
 		}
 
 		/// <summary>
@@ -79,14 +94,14 @@ namespace UniFramework.Animation
 		/// <param name="fadeLength">融合时间</param>
 		public void Play(string name, float fadeLength)
 		{
-			var animState = GetAnimState(name);
-			if (animState == null)
+			var animClip = GetAnimClip(name);
+			if (animClip == null)
 			{
 				UniLogger.Warning($"Not found animation {name}");
 				return;
 			}
 
-			int layer = animState.Layer;
+			int layer = animClip.Layer;
 			var animMixer = GetAnimMixer(layer);
 			if (animMixer == null)
 				animMixer = CreateAnimMixer(layer);
@@ -94,7 +109,7 @@ namespace UniFramework.Animation
 			if(animMixer.IsConnect == false)
 				animMixer.Connect(_mixerRoot, animMixer.Layer);		
 
-			animMixer.Play(animState, fadeLength);
+			animMixer.Play(animClip, fadeLength);
 		}
 
 		/// <summary>
@@ -103,21 +118,21 @@ namespace UniFramework.Animation
 		/// <param name="name">动画名称</param>
 		public void Stop(string name)
 		{
-			var animState = GetAnimState(name);
-			if (animState == null)
+			var animClip = GetAnimClip(name);
+			if (animClip == null)
 			{
 				UniLogger.Warning($"Not found animation {name}");
 				return;
 			}
 
-			if (animState.IsConnect == false)
+			if (animClip.IsConnect == false)
 				return;
 
-			var animMixer = GetAnimMixer(animState.Layer);
+			var animMixer = GetAnimMixer(animClip.Layer);
 			if (animMixer == null)
 				throw new System.Exception("Should never get here.");
 
-			animMixer.Stop(animState.Name);
+			animMixer.Stop(animClip.Name);
 		}
 
 		/// <summary>
@@ -141,8 +156,8 @@ namespace UniFramework.Animation
 				return false;
 			}
 
-			AnimState stateNode = new AnimState(_graph, clip, name, layer);
-			_states.Add(stateNode);
+			AnimClip animClip = new AnimClip(_graph, clip, name, layer);
+			_animClips.Add(animClip);
 			return true;
 		}
 
@@ -158,28 +173,14 @@ namespace UniFramework.Animation
 				return false;
 			}
 
-			AnimState animState = GetAnimState(name);
-			AnimMixer animMixer = GetAnimMixer(animState.Layer);
+			AnimClip animClip = GetAnimClip(name);
+			AnimMixer animMixer = GetAnimMixer(animClip.Layer);
 			if(animMixer != null)
-				animMixer.RemoveState(animState.Name);
+				animMixer.RemoveClip(animClip.Name);
 
-			animState.Destroy();
-			_states.Remove(animState);
+			animClip.Destroy();
+			_animClips.Remove(animClip);
 			return true;
-		}
-
-		/// <summary>
-		/// 获取一个动画状态
-		/// </summary>
-		/// <param name="name">动画名称</param>
-		public AnimState GetAnimState(string name)
-		{
-			for (int i = 0; i < _states.Count; i++)
-			{
-				if (_states[i].Name == name)
-					return _states[i];
-			}
-			return null;
 		}
 
 		/// <summary>
@@ -188,20 +189,29 @@ namespace UniFramework.Animation
 		/// <param name="name">动画名称</param>
 		public bool IsContains(string name)
 		{
-			for (int i = 0; i < _states.Count; i++)
+			for (int i = 0; i < _animClips.Count; i++)
 			{
-				if (_states[i].Name == name)
+				if (_animClips[i].Name == name)
 					return true;
 			}
 			return false;
 		}
 
+		private AnimClip GetAnimClip(string name)
+		{
+			for (int i = 0; i < _animClips.Count; i++)
+			{
+				if (_animClips[i].Name == name)
+					return _animClips[i];
+			}
+			return null;
+		}
 		private AnimMixer GetAnimMixer(int layer)
 		{
-			for (int i = 0; i < _mixers.Count; i++)
+			for (int i = 0; i < _animMixers.Count; i++)
 			{
-				if (_mixers[i].Layer == layer)
-					return _mixers[i];
+				if (_animMixers[i].Layer == layer)
+					return _animMixers[i];
 			}
 			return null;
 		}
@@ -222,7 +232,7 @@ namespace UniFramework.Animation
 			}
 
 			var animMixer = new AnimMixer(_graph, layer);
-			_mixers.Add(animMixer);
+			_animMixers.Add(animMixer);
 			return animMixer;
 		}
 	}

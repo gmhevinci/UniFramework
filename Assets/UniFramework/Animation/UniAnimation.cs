@@ -20,13 +20,13 @@ namespace UniFramework.Animation
 		private Animator _animator;
 
 		[SerializeField]
-		protected AnimationWrapper[] _animations;
+		private AnimationWrapper[] _animations;
 
 		[SerializeField]
-		protected bool _playAutomatically = true;
+		private bool _playAutomatically = true;
 
 		[SerializeField]
-		protected bool _animatePhysics = false;
+		private bool _animatePhysics = false;
 
 		/// <summary>
 		/// 自动播放动画

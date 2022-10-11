@@ -6,7 +6,7 @@ using UnityEngine.Animations;
 
 namespace UniFramework.Animation
 {
-	public abstract class AnimNode
+	internal abstract class AnimNode
 	{
 		private readonly PlayableGraph _graph;
 		private Playable _source;

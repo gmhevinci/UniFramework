@@ -4,17 +4,28 @@ namespace UnityEngine
 {
 	public static class UnityEngine_GameObject_Tween_Extension
 	{
-		public static TweenHandle PlayTween(this GameObject go, ITweenNode tween)
+		/// <summary>
+		/// 播放补间动画
+		/// </summary>
+		public static TweenHandle PlayTween(this GameObject go, ITweenNode tweenRoot)
 		{
-			return UniTween.Play(tween, go);
+			return UniTween.Play(tweenRoot, go);
 		}
-		public static TweenHandle PlayTween(this GameObject go, ITweenChain tween)
+
+		/// <summary>
+		/// 播放补间动画
+		/// </summary>
+		public static TweenHandle PlayTween(this GameObject go, ITweenChain tweenRoot)
 		{
-			return UniTween.Play(tween, go);
+			return UniTween.Play(tweenRoot, go);
 		}
-		public static TweenHandle PlayTween(this GameObject go, ChainNode tween)
+
+		/// <summary>
+		/// 播放补间动画
+		/// </summary>
+		public static TweenHandle PlayTween(this GameObject go, ChainNode tweenRoot)
 		{
-			return UniTween.Play(tween, go);
+			return UniTween.Play(tweenRoot, go);
 		}
 	}
 }

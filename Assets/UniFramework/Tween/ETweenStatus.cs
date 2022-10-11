@@ -1,6 +1,9 @@
 ﻿
 namespace UniFramework.Tween
 {
+	/// <summary>
+	/// 补间动画状态
+	/// </summary>
 	public enum ETweenStatus
 	{
 		/// <summary>

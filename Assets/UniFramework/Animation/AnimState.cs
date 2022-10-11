@@ -1,99 +1,126 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Animations;
 
 namespace UniFramework.Animation
 {
-	public sealed class AnimState : AnimNode
+	public class AnimState
 	{
-		public readonly string Name;
-		private readonly AnimationClip _clip;
-		public AnimationClipPlayable _clipPlayable;
+		private readonly AnimClip _animClip;
+
+		private AnimState()
+		{
+		}
+		internal AnimState(AnimClip animClip)
+		{
+			_animClip = animClip;
+		}
+
 
 		/// <summary>
-		/// 动画层级
+		/// The name of animation.
 		/// </summary>
-		public int Layer = 0;
-
-		/// <summary>
-		/// 动画长度
-		/// </summary>
-		public float ClipLength
+		public string Name
 		{
 			get
 			{
-				if (_clip == null)
-					return 0f;
-				if (Speed == 0f)
-					return Mathf.Infinity;
-				return _clip.length / Speed;
+				return _animClip.Name;
 			}
 		}
 
 		/// <summary>
-		/// 归一化时间轴
+		/// The length of the animation clip in seconds.
 		/// </summary>
-		public float NormalizedTime
+		public float Length
 		{
-			set
-			{
-				if (_clip == null)
-					return;
-				Time = _clip.length * value;
-			}
-
 			get
 			{
-				if (_clip == null)
-					return 1f;
-				return Time / _clip.length;
+				return _animClip.ClipLength;
 			}
 		}
 
 		/// <summary>
-		/// 动画模式
+		/// The layer of animation.
+		/// </summary>
+		public int Layer
+		{
+			get
+			{
+				return _animClip.Layer;
+			}
+		}
+
+		/// <summary>
+		///  Wrapping mode of the animation.
 		/// </summary>
 		public WrapMode WrapMode
 		{
-			set
-			{
-				if (_clip != null)
-					_clip.wrapMode = value;
-			}
 			get
 			{
-				if (_clip == null)
-					return WrapMode.Default;
-				return _clip.wrapMode;
+				return _animClip.WrapMode;
 			}
 		}
 
-		public AnimState(PlayableGraph graph, AnimationClip clip, string name, int layer) : base(graph)
+
+		/// <summary>
+		/// The weight of animation.
+		/// </summary>
+		public float Weight
 		{
-			_clip = clip;
-			Name = name;
-			Layer = layer;
-
-			_clipPlayable = AnimationClipPlayable.Create(graph, clip);
-			_clipPlayable.SetApplyFootIK(false);
-			_clipPlayable.SetApplyPlayableIK(false);
-			SetSourcePlayable(_clipPlayable);
-
-			if (clip.wrapMode == WrapMode.Once)
+			get
 			{
-				_clipPlayable.SetDuration(clip.length);
+				return _animClip.Weight;
+			}
+			set
+			{
+				_animClip.Weight = value;
 			}
 		}
-		public override void PlayNode()
-		{
-			if (_clip.wrapMode == WrapMode.Once || _clip.wrapMode == WrapMode.ClampForever)
-			{
-				Time = 0;
-			}
 
-			base.PlayNode();
+		/// <summary>
+		/// The current time of the animation.
+		/// </summary>
+		public float Time
+		{
+			get
+			{
+				return _animClip.Time;
+			}
+			set
+			{
+				_animClip.Time = value;
+			}
+		}
+
+		/// <summary>
+		/// The normalized time of the animation.
+		/// </summary>
+		public float NormalizedTime
+		{
+			get
+			{
+				return _animClip.NormalizedTime;
+			}
+			set
+			{
+				_animClip.NormalizedTime = value;
+			}
+		}
+
+		/// <summary>
+		/// The playback speed of the animation. 1 is normal playback speed.
+		/// </summary>
+		public float Speed
+		{
+			get
+			{
+				return _animClip.Speed;
+			}
+			set
+			{
+				_animClip.Speed = value;
+			}
 		}
 	}
 }

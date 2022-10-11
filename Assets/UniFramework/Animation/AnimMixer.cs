@@ -7,10 +7,10 @@ using UniFramework.Utility;
 
 namespace UniFramework.Animation
 {
-	public sealed class AnimMixer : AnimNode
+	internal sealed class AnimMixer : AnimNode
 	{
 		private const float HIDE_DURATION = 0.25f;
-		private readonly List<AnimState> _states = new List<AnimState>(10);
+		private readonly List<AnimClip> _animClips = new List<AnimClip>(10);
 		private AnimationMixerPlayable _mixer;
 		private bool _isQuiting = false;
 
@@ -31,20 +31,20 @@ namespace UniFramework.Animation
 		{
 			base.Update(deltaTime);
 
-			for (int i = 0; i < _states.Count; i++)
+			for (int i = 0; i < _animClips.Count; i++)
 			{
-				var state = _states[i];
-				if (state != null)
-					state.Update(deltaTime);
+				var animClip = _animClips[i];
+				if (animClip != null)
+					animClip.Update(deltaTime);
 			}
 
 			bool isAllDone = true;
-			for (int i = 0; i < _states.Count; i++)
+			for (int i = 0; i < _animClips.Count; i++)
 			{
-				var state = _states[i];
-				if (state != null)
+				var animClip = _animClips[i];
+				if (animClip != null)
 				{
-					if (state.IsDone == false)
+					if (animClip.IsDone == false)
 						isAllDone = false;
 				}
 			}
@@ -65,47 +65,47 @@ namespace UniFramework.Animation
 		/// <summary>
 		/// 播放指定动画
 		/// </summary>
-		public void Play(AnimState animState, float fadeDuration)
+		public void Play(AnimClip newAnimClip, float fadeDuration)
 		{
 			// 重新激活混合器
 			_isQuiting = false;
 			StartWeightFade(1f, 0);
 
-			if (IsContains(animState) == false)
+			if (IsContains(newAnimClip) == false)
 			{
 				// 优先插入到一个空位
-				int index = _states.FindIndex(s => s == null);
+				int index = _animClips.FindIndex(s => s == null);
 				if (index == -1)
 				{
 					// Increase input count
 					int inputCount = _mixer.GetInputCount();
 					_mixer.SetInputCount(inputCount + 1);
 
-					animState.Connect(_mixer, inputCount);
-					_states.Add(animState);
+					newAnimClip.Connect(_mixer, inputCount);
+					_animClips.Add(newAnimClip);
 				}
 				else
 				{
-					animState.Connect(_mixer, index);
-					_states[index] = animState;
+					newAnimClip.Connect(_mixer, index);
+					_animClips[index] = newAnimClip;
 				}
 			}
 
-			for (int i = 0; i < _states.Count; i++)
+			for (int i = 0; i < _animClips.Count; i++)
 			{
-				var state = _states[i];
-				if (state == null)
+				var animClip = _animClips[i];
+				if (animClip == null)
 					continue;
 
-				if (state == animState)
+				if (animClip == newAnimClip)
 				{
-					state.StartWeightFade(1f, fadeDuration);
-					state.PlayNode();
+					animClip.StartWeightFade(1f, fadeDuration);
+					animClip.PlayNode();
 				}
 				else
 				{
-					state.StartWeightFade(0f, fadeDuration);
-					state.PauseNode();
+					animClip.StartWeightFade(0f, fadeDuration);
+					animClip.PauseNode();
 				}
 			}
 		}
@@ -115,12 +115,12 @@ namespace UniFramework.Animation
 		/// </summary>
 		public void Stop(string name)
 		{
-			AnimState state = FindState(name);
-			if (state == null)
+			AnimClip animClip = FindClip(name);
+			if (animClip == null)
 				return;
 
-			state.PauseNode();
-			state.ResetNode();
+			animClip.PauseNode();
+			animClip.ResetNode();
 		}
 
 		/// <summary>
@@ -128,23 +128,23 @@ namespace UniFramework.Animation
 		/// </summary>
 		public void PauseAll()
 		{
-			for (int i = 0; i < _states.Count; i++)
+			for (int i = 0; i < _animClips.Count; i++)
 			{
-				var state = _states[i];
-				if (state == null)
+				var animClip = _animClips[i];
+				if (animClip == null)
 					continue;
-				state.PauseNode();
+				animClip.PauseNode();
 			}
 		}
 
 		/// <summary>
 		/// 是否包含该动画
 		/// </summary>
-		public bool IsContains(AnimNode node)
+		public bool IsContains(AnimClip clip)
 		{
-			foreach (var state in _states)
+			foreach (var animClip in _animClips)
 			{
-				if (state == node)
+				if (animClip == clip)
 					return true;
 			}
 			return false;
@@ -153,42 +153,42 @@ namespace UniFramework.Animation
 		/// <summary>
 		/// 移除一个动画
 		/// </summary>
-		public void RemoveState(string name)
+		public void RemoveClip(string name)
 		{
-			var state = FindState(name);
-			if (state == null)
+			var animClip = FindClip(name);
+			if (animClip == null)
 				return;
 
-			_states[state.InputPort] = null;
-			state.Destroy();
+			_animClips[animClip.InputPort] = null;
+			animClip.Destroy();
 		}
 
 		/// <summary>
 		/// 获取指定的动画
 		/// </summary>
 		/// <returns>如果没有返回NULL</returns>
-		private AnimState FindState(string name)
+		private AnimClip FindClip(string name)
 		{
-			foreach (var state in _states)
+			foreach (var animClip in _animClips)
 			{
-				if (state != null && state.Name == name)
-					return state;
+				if (animClip != null && animClip.Name == name)
+					return animClip;
 			}
 
-			UniLogger.Warning($"Animation state doesn't exist : {name}");
+			UniLogger.Warning($"${nameof(AnimClip)} doesn't exist : {name}");
 			return null;
 		}
 
 		private void DisconnectMixer()
 		{
-			for (int i = 0; i < _states.Count; i++)
+			for (int i = 0; i < _animClips.Count; i++)
 			{
-				var state = _states[i];
-				if (state == null)
+				var animClip = _animClips[i];
+				if (animClip == null)
 					continue;
 
-				state.Disconnect();
-				_states[i] = null;
+				animClip.Disconnect();
+				_animClips[i] = null;
 			}
 
 			Disconnect();

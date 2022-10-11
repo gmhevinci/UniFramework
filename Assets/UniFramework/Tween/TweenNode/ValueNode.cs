@@ -24,8 +24,8 @@ namespace UniFramework.Tween
 
 
 		private readonly float _duration;
-		private readonly ValueType _valueFrom;
-		private readonly ValueType _valueTo;
+		private ValueType _valueFrom;
+		private ValueType _valueTo;
 
 		private ETweenLoop _tweenLoop = ETweenLoop.None;
 		private int _loopCount = -1;
@@ -141,6 +141,16 @@ namespace UniFramework.Tween
 		public ValueNode<ValueType> SetRunningTime(float runingTime)
 		{
 			_runningTime = runingTime;
+			return this;
+		}
+		public ValueNode<ValueType> SetValueFrom(ValueType value)
+		{
+			_valueFrom = value;
+			return this;
+		}
+		public ValueNode<ValueType> SetValueTo(ValueType value)
+		{
+			_valueTo = value;
 			return this;
 		}
 		public ValueNode<ValueType> SetLoop(ETweenLoop tweenLoop, int loopCount = -1)
