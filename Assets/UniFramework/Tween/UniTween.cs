@@ -35,9 +35,9 @@ namespace UniFramework.Tween
 			if (_isInitialize)
 				throw new Exception($"{nameof(UniTween)} is initialized !");
 
-			// 创建驱动器
-			if (_isInitialize == false)
+			if(_isInitialize == false)
 			{
+				// 创建驱动器
 				_isInitialize = true;
 				UnityEngine.GameObject driverGo = new UnityEngine.GameObject($"[{nameof(UniTween)}]");
 				driverGo.AddComponent<UniTweenDriver>();
@@ -76,7 +76,7 @@ namespace UniFramework.Tween
 				{
 					var handle = _remover[i];
 					handle.Dispose();
-					_tweens.Remove(handle);			
+					_tweens.Remove(handle);
 				}
 				_remover.Clear();
 			}
