@@ -66,9 +66,24 @@ namespace UniFramework.Network
 		/// <param name="packageBodyMaxSize">网络包体最大长度</param>
 		public static TcpClient CreateTcpClient(int packageBodyMaxSize, INetPackageEncoder encoder, INetPackageDecoder decoder)
 		{
+			if (_isInitialize)
+				throw new Exception($"{nameof(UniNetwork)} not initialized !");
+
 			var client = new TcpClient(packageBodyMaxSize, encoder, decoder);
 			_tcpClients.Add(client);
 			return client;
+		}
+
+		/// <summary>
+		/// 销毁TCP客户端
+		/// </summary>
+		public static void DestroyTcpClient(TcpClient client)
+		{
+			if (client == null)
+				return;
+
+			client.Dispose();
+			_tcpClients.Remove(client);
 		}
 	}
 }

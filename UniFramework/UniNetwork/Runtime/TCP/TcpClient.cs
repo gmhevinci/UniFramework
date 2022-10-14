@@ -6,7 +6,7 @@ using System.Net.Sockets;
 
 namespace UniFramework.Network
 {
-	public class TcpClient
+	public class TcpClient : IDisposable
 	{
 		private class UserToken
 		{
@@ -46,13 +46,20 @@ namespace UniFramework.Network
 		/// </summary>
 		internal void Destroy()
 		{
+			Dispose();
+		}
+
+		/// <summary>
+		/// Dispose
+		/// </summary>
+		public void Dispose()
+		{
 			if (_channel != null)
 			{
 				_channel.Dispose();
 				_channel = null;
 			}
 		}
-
 
 		/// <summary>
 		/// 发送网络包
