@@ -9,7 +9,7 @@ namespace UniFramework.Pooling
 	internal class GameObjectPool
 	{
 		private readonly Transform _poolRoot;
-		private readonly Queue<SpawnHandle> _cache;
+		private readonly Queue<InstantiateOperation> _cache;
 		private readonly bool _dontDestroy;
 		private readonly int _initCapacity;
 		private readonly int _maxCapacity;
@@ -20,7 +20,7 @@ namespace UniFramework.Pooling
 		/// 资源句柄
 		/// </summary>
 		public AssetOperationHandle AssetHandle { private set; get; }
-		
+
 		/// <summary>
 		/// 资源定位地址
 		/// </summary>
@@ -59,9 +59,9 @@ namespace UniFramework.Pooling
 			_destroyTime = destroyTime;
 
 			// 创建缓存池
-			_cache = new Queue<SpawnHandle>(initCapacity);
+			_cache = new Queue<InstantiateOperation>(initCapacity);
 		}
-		
+
 		/// <summary>
 		/// 创建对象池
 		/// </summary>
@@ -73,8 +73,7 @@ namespace UniFramework.Pooling
 			// 创建初始对象
 			for (int i = 0; i < _initCapacity; i++)
 			{
-				SpawnHandle operation = new SpawnHandle(this, AssetHandle, Vector3.zero, Quaternion.identity, _poolRoot, true);
-				YooAssets.StartOperation(operation);
+				var operation = AssetHandle.InstantiateAsync(_poolRoot);
 				_cache.Enqueue(operation);
 			}
 		}
@@ -89,9 +88,10 @@ namespace UniFramework.Pooling
 			AssetHandle = null;
 
 			// 销毁游戏对象
-			foreach (var operation in _cache)
+			foreach (var handle in _cache)
 			{
-				operation.Destroy();
+				if (handle.Result != null)
+					GameObject.Destroy(handle.Result);
 			}
 			_cache.Clear();
 
@@ -125,79 +125,77 @@ namespace UniFramework.Pooling
 		/// <summary>
 		/// 获取一个游戏对象
 		/// </summary>
-		public SpawnHandle Spawn(bool forceClone, params System.Object[] userDatas)
+		public SpawnHandle Spawn(Transform parent, Vector3 position, Quaternion rotation, bool forceClone, params System.Object[] userDatas)
 		{
-			SpawnHandle operation;
+			InstantiateOperation operation;
 			if (forceClone == false && _cache.Count > 0)
-			{
 				operation = _cache.Dequeue();
-			}
 			else
-			{
-				operation = new SpawnHandle(this, AssetHandle, Vector3.zero, Quaternion.identity, _poolRoot, true);
-				YooAssets.StartOperation(operation);
-			}
+				operation = AssetHandle.InstantiateAsync();
 
 			SpawnCount++;
-			return operation;
+			SpawnHandle handle = new SpawnHandle(this, operation, parent, position, rotation, userDatas);
+			YooAssets.StartOperation(handle);
+			return handle;
 		}
 
-		public void Restore(SpawnHandle operation)
+		public void Restore(SpawnHandle handle)
 		{
 			if (IsDestroyed())
 			{
-				operation.Destroy();
+				handle.Destroy();
 				return;
 			}
 
 			SpawnCount--;
 			if (SpawnCount <= 0)
-			{
 				_lastRestoreRealTime = Time.realtimeSinceStartup;
+
+			// 如果外部逻辑销毁了游戏对象
+			if(handle.Status == EOperationStatus.Succeed)
+			{
+				if (handle.GameObj == null)
+				{
+					handle.Destroy();
+					return;
+				}
 			}
 
-			// 1. 资源加载失败
-			// 2. 资源还未加载完毕
-			// 3. 在异步实例化过程中被取消
-			// 4. 外部逻辑销毁了游戏对象
-			if (operation.SpawnGameObject == null)
+			// 如果缓存池还未满员
+			if (_cache.Count < _maxCapacity)
 			{
-				operation.Destroy();
+				var operation = handle.GetOperation();
+				SetRestoreCloneObject(operation.Result);
+				_cache.Enqueue(operation);
+				handle.Release();
 			}
 			else
 			{
-				if (_cache.Count < _maxCapacity)
-				{
-					SetRestoreCloneObject(operation.SpawnGameObject);
-					_cache.Enqueue(operation);
-				}
-				else
-				{
-					operation.Destroy();
-				}
+				handle.Destroy();
 			}
 		}
-		public void Discard(SpawnHandle operation)
+		public void Discard(SpawnHandle handle)
 		{
 			if (IsDestroyed())
 			{
-				operation.Destroy();
+				handle.Destroy();
 				return;
 			}
 
 			SpawnCount--;
 			if (SpawnCount <= 0)
-			{
 				_lastRestoreRealTime = Time.realtimeSinceStartup;
-			}
 
-			operation.Destroy();
+			handle.Destroy();
 		}
 		private void SetRestoreCloneObject(GameObject cloneObj)
 		{
-			cloneObj.SetActive(false);
-			cloneObj.transform.SetParent(_poolRoot);
-			cloneObj.transform.localPosition = Vector3.zero;
+			if (cloneObj != null)
+			{
+				cloneObj.SetActive(false);
+				cloneObj.transform.SetParent(_poolRoot);
+				cloneObj.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+			}
 		}
 	}
 }

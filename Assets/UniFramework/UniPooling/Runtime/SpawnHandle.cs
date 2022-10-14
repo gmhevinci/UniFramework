@@ -8,23 +8,34 @@ namespace UniFramework.Pooling
 		private enum ESteps
 		{
 			None,
-			Clone,
+			Waiting,
 			Done,
 		}
 
 		private readonly GameObjectPool _pool;
-		private readonly AssetOperationHandle _handle;
+		private InstantiateOperation _operation;
+		private readonly Transform _parent;
 		private readonly Vector3 _position;
 		private readonly Quaternion _rotation;
-		private readonly Transform _parent;
-		private readonly bool _setPositionRotation;
 		private ESteps _steps = ESteps.None;
-
+		
 		/// <summary>
 		/// 实例化的游戏对象
 		/// </summary>
-		public GameObject SpawnGameObject = null;
+		public GameObject GameObj
+		{
+			get
+			{
+				if (_operation == null)
+				{
+					UniLogger.Warning("The spawn handle is invalid !");
+					return null;
+				}
 
+				return _operation.Result;
+			}
+		}
+		
 		/// <summary>
 		/// 用户自定义数据集
 		/// </summary>
@@ -33,87 +44,76 @@ namespace UniFramework.Pooling
 		private SpawnHandle()
 		{
 		}
-		internal SpawnHandle(GameObjectPool pool, AssetOperationHandle handle, Vector3 position, Quaternion rotation, Transform parent, bool setPositionRotation, params System.Object[] userDatas)
+		internal SpawnHandle(GameObjectPool pool, InstantiateOperation operation, Transform parent, Vector3 position, Quaternion rotation, params System.Object[] userDatas)
 		{
 			_pool = pool;
-			_handle = handle;
+			_operation = operation;
+			_parent = parent;
 			_position = position;
 			_rotation = rotation;
-			_parent = parent;
-			_setPositionRotation = setPositionRotation;
 			UserDatas = userDatas;
 		}
 		protected override void OnStart()
 		{
-			_steps = ESteps.Clone;
+			_steps = ESteps.Waiting;
 		}
 		protected override void OnUpdate()
 		{
 			if (_steps == ESteps.None || _steps == ESteps.Done)
 				return;
 
-			if (_steps == ESteps.Clone)
+			if (_steps == ESteps.Waiting)
 			{
-				if (_handle.IsValid == false)
+				if (_operation.IsDone == false)
+					return;
+
+				if (_operation.Status != EOperationStatus.Succeed)
 				{
 					_steps = ESteps.Done;
 					Status = EOperationStatus.Failed;
-					Error = $"{nameof(AssetOperationHandle)} is invalid.";
+					Error = _operation.Error;
 					return;
 				}
 
-				if (_handle.IsDone == false)
-					return;
-
-				if (_handle.AssetObject == null)
+				if (_operation.Result == null)
 				{
 					_steps = ESteps.Done;
 					Status = EOperationStatus.Failed;
-					Error = $"{nameof(AssetOperationHandle.AssetObject)} is null.";
+					Error = $"Clone game object is null.";
 					return;
 				}
 
-				if (_setPositionRotation)
-				{
-					if (_parent == null)
-						SpawnGameObject = Object.Instantiate(_handle.AssetObject as GameObject, _position, _rotation);
-					else
-						SpawnGameObject = Object.Instantiate(_handle.AssetObject as GameObject, _position, _rotation, _parent);
-				}
-				else
-				{
-					if (_parent == null)
-						SpawnGameObject = Object.Instantiate(_handle.AssetObject as GameObject);
-					else
-						SpawnGameObject = Object.Instantiate(_handle.AssetObject as GameObject, _parent);
-				}
+				// 设置参数	
+				_operation.Result.transform.SetParent(_parent);
+				_operation.Result.transform.SetPositionAndRotation(_position, _rotation);
+				_operation.Result.SetActive(true);
 
 				_steps = ESteps.Done;
 				Status = EOperationStatus.Succeed;
 			}
 		}
 
-		/// <summary>
-		/// 销毁
-		/// </summary>
 		internal void Destroy()
 		{
-			Cancel();
-
-			if (SpawnGameObject != null)
+			if (_operation != null)
 			{
-				GameObject.Destroy(SpawnGameObject);
+				// 取消异步操作
+				_operation.Cancel();
+
+				// 销毁游戏对象
+				if (_operation.Result != null)
+					GameObject.Destroy(_operation.Result);
+
+				_operation = null;
 			}
 		}
-		private void Cancel()
+		internal void Release()
 		{
-			if (IsDone == false)
-			{
-				_steps = ESteps.Done;
-				Status = EOperationStatus.Failed;
-				Error = $"User cancelled !";
-				ClearCompletedCallback();
-			}
+			_operation = null;
+		}
+		internal InstantiateOperation GetOperation()
+		{
+			return _operation;
 		}
 
 		/// <summary>
@@ -121,8 +121,11 @@ namespace UniFramework.Pooling
 		/// </summary>
 		public void Restore()
 		{
-			ClearCompletedCallback();
-			_pool.Restore(this);
+			if (_operation != null)
+			{
+				ClearCompletedCallback();
+				_pool.Restore(this);
+			}
 		}
 
 		/// <summary>
@@ -130,8 +133,11 @@ namespace UniFramework.Pooling
 		/// </summary>
 		public void Discard()
 		{
-			ClearCompletedCallback();
-			_pool.Discard(this);
+			if (_operation != null)
+			{
+				ClearCompletedCallback();
+				_pool.Discard(this);
+			}
 		}
 
 		/// <summary>
@@ -139,10 +145,13 @@ namespace UniFramework.Pooling
 		/// </summary>
 		public void WaitForAsyncComplete()
 		{
-			if (_steps == ESteps.Done)
-				return;
-			_handle.WaitForAsyncComplete();
-			OnUpdate();
+			if (_operation != null)
+			{
+				if (_steps == ESteps.Done)
+					return;
+				_operation.WaitForAsyncComplete();
+				OnUpdate();
+			}
 		}
 	}
 }
