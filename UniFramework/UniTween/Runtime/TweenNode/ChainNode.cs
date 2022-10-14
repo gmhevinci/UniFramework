@@ -19,11 +19,19 @@ namespace UniFramework.Tween
 		public ETweenStatus Status { private set; get; } = ETweenStatus.Idle;
 
 
+		/// <summary>
+		/// 添加节点
+		/// </summary>
 		public void AddNode(ITweenNode node)
 		{
 			if (_nodes.Contains(node) == false)
 				_nodes.Add(node);
 		}
+
+		/// <summary>
+		/// 添加节点
+		/// </summary>
+		/// <param name="nodes"></param>
 		public void AddNode(params ITweenNode[] nodes)
 		{
 			foreach (var node in nodes)
@@ -31,6 +39,7 @@ namespace UniFramework.Tween
 				AddNode(node);
 			}
 		}
+
 		public ITweenChain SetOnBegin(System.Action onBegin)
 		{
 			_onBegin = onBegin;

@@ -16,7 +16,7 @@ namespace UniFramework.Tween
 		/// <summary>
 		/// 设置条件方法
 		/// </summary>
-		public ITweenNode SetCondition(System.Func<bool> condition)
+		public UntilNode SetCondition(System.Func<bool> condition)
 		{
 			_condition = condition;
 			return this;

@@ -17,7 +17,7 @@ namespace UniFramework.Tween
 		/// <summary>
 		/// 设置执行方法
 		/// </summary>
-		public ITweenNode SetExecute(System.Action execute)
+		public ExecuteNode SetExecute(System.Action execute)
 		{
 			_execute = execute;
 			return this;

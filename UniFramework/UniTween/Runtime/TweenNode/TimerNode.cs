@@ -23,7 +23,7 @@ namespace UniFramework.Tween
 		/// <summary>
 		/// 设置触发方法
 		/// </summary>
-		public ITweenNode SetTrigger(System.Action trigger)
+		public TimerNode SetTrigger(System.Action trigger)
 		{
 			_trigger = trigger;
 			return this;
