@@ -23,7 +23,38 @@ namespace UniFramework.Tween
 		/// <summary>
 		/// 并行执行的复合节点
 		/// </summary>
-		public static ITweenChain Parallel(this ITweenChain chain, params ITweenNode[] nodes)
+		public static ITweenChain AppendParallel(this ITweenChain chain, params ITweenNode[] nodes)
+		{
+			var node = UniTween.AllocateParallel(nodes);
+			chain.Append(node);
+			return chain;
+		}
+
+		/// <summary>
+		/// 顺序执行的复合节点
+		/// </summary>
+		public static ITweenChain AppendSequence(this ITweenChain chain, params ITweenNode[] nodes)
+		{
+			var node = UniTween.AllocateSequence(nodes);
+			chain.Append(node);
+			return chain;
+		}
+
+		/// <summary>
+		/// 随机执行的复合节点
+		/// </summary>
+		public static ITweenChain AppendSelector(this ITweenChain chain, params ITweenNode[] nodes)
+		{
+			var node = UniTween.AllocateSelector(nodes);
+			chain.Append(node);
+			return chain;
+		}
+
+		
+		/// <summary>
+		/// 并行执行的复合节点
+		/// </summary>
+		public static ITweenChain SwitchToParallel(this ITweenChain chain, params ITweenNode[] nodes)
 		{
 			var node = UniTween.AllocateParallel(nodes);
 			chain.Append(node);
@@ -33,7 +64,7 @@ namespace UniFramework.Tween
 		/// <summary>
 		/// 顺序执行的复合节点
 		/// </summary>
-		public static ITweenChain Sequence(this ITweenChain chain, params ITweenNode[] nodes)
+		public static ITweenChain SwitchToSequence(this ITweenChain chain, params ITweenNode[] nodes)
 		{
 			var node = UniTween.AllocateSequence(nodes);
 			chain.Append(node);
@@ -43,7 +74,7 @@ namespace UniFramework.Tween
 		/// <summary>
 		/// 随机执行的复合节点
 		/// </summary>
-		public static ITweenChain Selector(this ITweenChain chain, params ITweenNode[] nodes)
+		public static ITweenChain SwitchToSelector(this ITweenChain chain, params ITweenNode[] nodes)
 		{
 			var node = UniTween.AllocateSelector(nodes);
 			chain.Append(node);

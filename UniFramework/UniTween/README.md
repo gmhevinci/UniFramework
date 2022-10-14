@@ -43,7 +43,10 @@ void Start()
 {
     // 原地停留1秒，然后向上移动，停留1秒，然后同时缩小并回归原位。
     ITweenChain tween = UniTween.AllocateSequence();
-    tween.Delay(1f).Append(this.transform.TweenMove(0.5f, new Vector3(0, 256, 0))).Delay(1f).Parallel().
+    tween.Delay(1f).
+        Append(this.transform.TweenMove(0.5f, new Vector3(0, 256, 0))).
+        Delay(1f).
+        SwitchToParallel().
         Append(this.transform.TweenScaleTo(0.5f, new Vector3(0.2f, 0.2f, 1f))).
         Append(this.transform.TweenMove(0.5f, new Vector3(0, 0, 0)));
      this.gameObject.PlayTween(tween);  
