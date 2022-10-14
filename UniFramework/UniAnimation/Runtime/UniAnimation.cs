@@ -108,6 +108,25 @@ namespace UniFramework.Animation
 		}
 
 		/// <summary>
+		/// 添加一个动画
+		/// </summary>
+		/// <param name="clip">动画片段</param>
+		/// <param name="layer">动画层级</param>
+		public bool AddAnimation(AnimationClip clip, int layer = 0)
+		{
+			return _animPlayable.AddAnimation(clip.name, clip, layer);
+		}
+
+		/// <summary>
+		/// 移除动画
+		/// </summary>
+		/// <param name="name">动画名称</param>
+		public bool RemoveAnimation(string name)
+		{
+			return _animPlayable.RemoveAnimation(name);
+		}
+
+		/// <summary>
 		/// 获取动画状态
 		/// </summary>
 		public AnimState GetState(string name)
