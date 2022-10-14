@@ -65,7 +65,7 @@ namespace UniFramework.Pooling
 		/// <summary>
 		/// 创建对象池
 		/// </summary>
-		public void CreatePool(YooAssetPackage assetPackage)
+		public void CreatePool(AssetsPackage assetPackage)
 		{
 			// 加载游戏对象
 			AssetHandle = assetPackage.LoadAssetAsync<GameObject>(Location);

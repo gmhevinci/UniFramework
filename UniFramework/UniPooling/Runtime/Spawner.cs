@@ -11,7 +11,7 @@ namespace UniFramework.Pooling
 		private readonly List<GameObjectPool> _gameObjectPools = new List<GameObjectPool>(100);
 		private readonly List<GameObjectPool> _removeList = new List<GameObjectPool>(100);
 		private readonly GameObject _spawnerRoot;
-		private readonly YooAssetPackage _assetPackage;
+		private readonly AssetsPackage _assetPackage;
 
 		public string PackageName
 		{
@@ -25,7 +25,7 @@ namespace UniFramework.Pooling
 		private Spawner()
 		{
 		}
-		internal Spawner(GameObject poolingRoot, YooAssetPackage assetPackage)
+		internal Spawner(GameObject poolingRoot, AssetsPackage assetPackage)
 		{
 			_spawnerRoot = new GameObject($"{assetPackage.PackageName}");
 			_spawnerRoot.transform.SetParent(poolingRoot.transform);
