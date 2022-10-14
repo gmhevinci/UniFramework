@@ -18,7 +18,7 @@ namespace UniFramework.Pooling
 		private readonly Vector3 _position;
 		private readonly Quaternion _rotation;
 		private ESteps _steps = ESteps.None;
-		
+
 		/// <summary>
 		/// 实例化的游戏对象
 		/// </summary>
@@ -35,7 +35,7 @@ namespace UniFramework.Pooling
 				return _operation.Result;
 			}
 		}
-		
+
 		/// <summary>
 		/// 用户自定义数据集
 		/// </summary>
@@ -93,29 +93,6 @@ namespace UniFramework.Pooling
 			}
 		}
 
-		internal void Destroy()
-		{
-			if (_operation != null)
-			{
-				// 取消异步操作
-				_operation.Cancel();
-
-				// 销毁游戏对象
-				if (_operation.Result != null)
-					GameObject.Destroy(_operation.Result);
-
-				_operation = null;
-			}
-		}
-		internal void Release()
-		{
-			_operation = null;
-		}
-		internal InstantiateOperation GetOperation()
-		{
-			return _operation;
-		}
-
 		/// <summary>
 		/// 回收
 		/// </summary>
@@ -124,7 +101,9 @@ namespace UniFramework.Pooling
 			if (_operation != null)
 			{
 				ClearCompletedCallback();
-				_pool.Restore(this);
+				CancelHandle();
+				_pool.Restore(_operation);
+				_operation = null;
 			}
 		}
 
@@ -136,7 +115,9 @@ namespace UniFramework.Pooling
 			if (_operation != null)
 			{
 				ClearCompletedCallback();
-				_pool.Discard(this);
+				CancelHandle();
+				_pool.Discard(_operation);
+				_operation = null;
 			}
 		}
 
@@ -151,6 +132,16 @@ namespace UniFramework.Pooling
 					return;
 				_operation.WaitForAsyncComplete();
 				OnUpdate();
+			}
+		}
+
+		private void CancelHandle()
+		{
+			if (IsDone == false)
+			{
+				_steps = ESteps.Done;
+				Status = EOperationStatus.Failed;
+				Error = $"User cancelled !";
 			}
 		}
 	}

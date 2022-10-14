@@ -9,7 +9,7 @@ namespace UniFramework.Pooling
 	internal class GameObjectPool
 	{
 		private readonly Transform _poolRoot;
-		private readonly Queue<InstantiateOperation> _cache;
+		private readonly Queue<InstantiateOperation> _cacheOperations;
 		private readonly bool _dontDestroy;
 		private readonly int _initCapacity;
 		private readonly int _maxCapacity;
@@ -31,7 +31,7 @@ namespace UniFramework.Pooling
 		/// </summary>
 		public int CacheCount
 		{
-			get { return _cache.Count; }
+			get { return _cacheOperations.Count; }
 		}
 
 		/// <summary>
@@ -59,7 +59,7 @@ namespace UniFramework.Pooling
 			_destroyTime = destroyTime;
 
 			// 创建缓存池
-			_cache = new Queue<InstantiateOperation>(initCapacity);
+			_cacheOperations = new Queue<InstantiateOperation>(initCapacity);
 		}
 
 		/// <summary>
@@ -74,7 +74,7 @@ namespace UniFramework.Pooling
 			for (int i = 0; i < _initCapacity; i++)
 			{
 				var operation = AssetHandle.InstantiateAsync(_poolRoot);
-				_cache.Enqueue(operation);
+				_cacheOperations.Enqueue(operation);
 			}
 		}
 
@@ -88,12 +88,12 @@ namespace UniFramework.Pooling
 			AssetHandle = null;
 
 			// 销毁游戏对象
-			foreach (var handle in _cache)
+			foreach (var operation in _cacheOperations)
 			{
-				if (handle.Result != null)
-					GameObject.Destroy(handle.Result);
+				if (operation.Result != null)
+					GameObject.Destroy(operation.Result);
 			}
-			_cache.Clear();
+			_cacheOperations.Clear();
 
 			SpawnCount = 0;
 		}
@@ -123,13 +123,65 @@ namespace UniFramework.Pooling
 		}
 
 		/// <summary>
+		/// 回收
+		/// </summary>
+		public void Restore(InstantiateOperation operation)
+		{
+			if (IsDestroyed())
+			{
+				DestroyInstantiateOperation(operation);
+				return;
+			}
+
+			SpawnCount--;
+			if (SpawnCount <= 0)
+				_lastRestoreRealTime = Time.realtimeSinceStartup;
+
+			// 如果外部逻辑销毁了游戏对象
+			if (operation.Status == EOperationStatus.Succeed)
+			{
+				if (operation.Result == null)
+					return;
+			}
+
+			// 如果缓存池还未满员
+			if (_cacheOperations.Count < _maxCapacity)
+			{
+				SetRestoreGameObject(operation.Result);
+				_cacheOperations.Enqueue(operation);
+			}
+			else
+			{
+				DestroyInstantiateOperation(operation);
+			}
+		}
+
+		/// <summary>
+		/// 丢弃
+		/// </summary>
+		public void Discard(InstantiateOperation operation)
+		{
+			if (IsDestroyed())
+			{
+				DestroyInstantiateOperation(operation);
+				return;
+			}
+
+			SpawnCount--;
+			if (SpawnCount <= 0)
+				_lastRestoreRealTime = Time.realtimeSinceStartup;
+
+			DestroyInstantiateOperation(operation);
+		}
+
+		/// <summary>
 		/// 获取一个游戏对象
 		/// </summary>
 		public SpawnHandle Spawn(Transform parent, Vector3 position, Quaternion rotation, bool forceClone, params System.Object[] userDatas)
 		{
 			InstantiateOperation operation;
-			if (forceClone == false && _cache.Count > 0)
-				operation = _cache.Dequeue();
+			if (forceClone == false && _cacheOperations.Count > 0)
+				operation = _cacheOperations.Dequeue();
 			else
 				operation = AssetHandle.InstantiateAsync();
 
@@ -139,62 +191,24 @@ namespace UniFramework.Pooling
 			return handle;
 		}
 
-		public void Restore(SpawnHandle handle)
+		private void DestroyInstantiateOperation(InstantiateOperation operation)
 		{
-			if (IsDestroyed())
-			{
-				handle.Destroy();
-				return;
-			}
+			// 取消异步操作
+			operation.Cancel();
 
-			SpawnCount--;
-			if (SpawnCount <= 0)
-				_lastRestoreRealTime = Time.realtimeSinceStartup;
-
-			// 如果外部逻辑销毁了游戏对象
-			if(handle.Status == EOperationStatus.Succeed)
+			// 销毁游戏对象
+			if (operation.Result != null)
 			{
-				if (handle.GameObj == null)
-				{
-					handle.Destroy();
-					return;
-				}
-			}
-
-			// 如果缓存池还未满员
-			if (_cache.Count < _maxCapacity)
-			{
-				var operation = handle.GetOperation();
-				SetRestoreCloneObject(operation.Result);
-				_cache.Enqueue(operation);
-				handle.Release();
-			}
-			else
-			{
-				handle.Destroy();
+				GameObject.Destroy(operation.Result);
 			}
 		}
-		public void Discard(SpawnHandle handle)
+		private void SetRestoreGameObject(GameObject gameObj)
 		{
-			if (IsDestroyed())
+			if (gameObj != null)
 			{
-				handle.Destroy();
-				return;
-			}
-
-			SpawnCount--;
-			if (SpawnCount <= 0)
-				_lastRestoreRealTime = Time.realtimeSinceStartup;
-
-			handle.Destroy();
-		}
-		private void SetRestoreCloneObject(GameObject cloneObj)
-		{
-			if (cloneObj != null)
-			{
-				cloneObj.SetActive(false);
-				cloneObj.transform.SetParent(_poolRoot);
-				cloneObj.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+				gameObj.SetActive(false);
+				gameObj.transform.SetParent(_poolRoot);
+				gameObj.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
 			}
 		}
 	}
