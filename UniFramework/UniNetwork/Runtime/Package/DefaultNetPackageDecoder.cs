@@ -9,15 +9,15 @@ namespace UniFramework.Network
 	public class DefaultNetPackageDecoder : INetPackageDecoder
 	{
 		private HandleErrorDelegate _handleErrorCallback;
-		private const int PackageHeaderIDFiledByte = 4; //int类型
-		private const int PackageHeaderLengthFiledByte = 4; //int类型
+		private const int PackageHeaderLengthFiledSize = 4; //int类型
+		private const int PackageHeaderIDFiledSize = 4; //int类型
 
 		/// <summary>
 		/// 获取包头的尺寸
 		/// </summary>
 		public int GetPackageHeaderSize()
 		{
-			return PackageHeaderIDFiledByte + PackageHeaderLengthFiledByte;
+			return PackageHeaderLengthFiledSize + PackageHeaderIDFiledSize;
 		}
 
 		/// <summary>
@@ -41,7 +41,7 @@ namespace UniFramework.Network
 			while (true)
 			{
 				// 如果数据不够判断消息长度
-				if (ringBuffer.ReadableBytes < PackageHeaderLengthFiledByte)
+				if (ringBuffer.ReadableBytes < PackageHeaderLengthFiledSize)
 					break;
 
 				ringBuffer.MarkReaderIndex();
@@ -65,23 +65,17 @@ namespace UniFramework.Network
 				}
 
 				// 检测包体长度
-				int bodySize = packageSize - PackageHeaderIDFiledByte;
+				int bodySize = packageSize - PackageHeaderIDFiledSize;
 				if (bodySize > packageBodyMaxSize)
 				{
-					_handleErrorCallback(true, $"The package {package.MsgID} size is larger than {packageBodyMaxSize} !");
+					_handleErrorCallback(true, $"The decode package {package.MsgID} body size is larger than {packageBodyMaxSize} !");
 					break;
 				}
 
 				// 读取包体
-				try
 				{
 					package.BodyBytes = ringBuffer.ReadBytes(bodySize);
 					outputPackages.Add(package);
-				}
-				catch (System.Exception ex)
-				{
-					// 注意：解包异常后继续解包
-					_handleErrorCallback(false, $"The package {package.MsgID} decode error : {ex.ToString()}");
 				}
 			}
 

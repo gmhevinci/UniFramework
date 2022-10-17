@@ -15,9 +15,8 @@ namespace UniFramework.Network
 		private readonly Queue<INetPackage> _receiveQueue = new Queue<INetPackage>(10000);
 		private readonly List<INetPackage> _decodeTempList = new List<INetPackage>(100);
 
-		private int _packageMaxSize;
 		private byte[] _receiveBuffer;
-		private RingBuffer _sendBuffer;
+		private RingBuffer _encodeBuffer;
 		private RingBuffer _decodeBuffer;
 		private int _packageBodyMaxSize;
 		private INetPackageEncoder _packageEncoder;
@@ -43,9 +42,6 @@ namespace UniFramework.Network
 			if (packageBodyMaxSize <= 0)
 				throw new System.ArgumentException($"PackageMaxSize is invalid : {packageBodyMaxSize}");
 
-			if (encoder.GetPackageHeaderSize() != decoder.GetPackageHeaderSize())
-				throw new System.Exception("The decoder and encoder package header size are inconsistent !");
-
 			_context = context;
 			_socket = socket;
 			_socket.NoDelay = true;
@@ -56,15 +52,14 @@ namespace UniFramework.Network
 			_packageEncoder.RigistHandleErrorCallback(HandleError);
 			_packageDecoder = decoder;
 			_packageDecoder.RigistHandleErrorCallback(HandleError);
-			_packageMaxSize = packageBodyMaxSize + _packageDecoder.GetPackageHeaderSize();
 
 			// 创建字节缓冲类
 			// 注意：字节缓冲区长度，推荐4倍最大包体长度
-			int byteBufferSize = _packageMaxSize * 4;
-			int tempBufferSize = _packageMaxSize * 2;
-			_sendBuffer = new RingBuffer(byteBufferSize);
-			_decodeBuffer = new RingBuffer(byteBufferSize);
-			_receiveBuffer = new byte[tempBufferSize];
+			int encoderPackageMaxSize = packageBodyMaxSize + _packageEncoder.GetPackageHeaderSize();
+			int decoderPakcageMaxSize = packageBodyMaxSize + _packageDecoder.GetPackageHeaderSize();
+			_encodeBuffer = new RingBuffer(encoderPackageMaxSize * 4);
+			_decodeBuffer = new RingBuffer(decoderPakcageMaxSize * 4);
+			_receiveBuffer = new byte[decoderPakcageMaxSize * 2];
 
 			// 创建IOCP接收类
 			_receiveArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
@@ -72,7 +67,7 @@ namespace UniFramework.Network
 
 			// 创建IOCP发送类
 			_sendArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-			_sendArgs.SetBuffer(_sendBuffer.GetBuffer(), 0, _sendBuffer.Capacity);
+			_sendArgs.SetBuffer(_encodeBuffer.GetBuffer(), 0, _encodeBuffer.Capacity);
 		}
 
 		/// <summary>
@@ -102,7 +97,7 @@ namespace UniFramework.Network
 				_receiveQueue.Clear();
 				_decodeTempList.Clear();
 
-				_sendBuffer.Clear();
+				_encodeBuffer.Clear();
 				_decodeBuffer.Clear();
 
 				_isSending = false;
@@ -157,22 +152,23 @@ namespace UniFramework.Network
 				_isSending = true;
 
 				// 清空缓存
-				_sendBuffer.Clear();
+				_encodeBuffer.Clear();
 
 				// 合并数据一起发送
 				while (_sendQueue.Count > 0)
 				{
 					// 如果不够写入一个最大的消息包
-					if (_sendBuffer.WriteableBytes < _packageMaxSize)
+					int encoderPackageMaxSize = _packageBodyMaxSize + _packageEncoder.GetPackageHeaderSize();
+					if (_encodeBuffer.WriteableBytes < encoderPackageMaxSize)
 						break;
 
 					// 数据压码
 					INetPackage package = _sendQueue.Dequeue();
-					_packageEncoder.Encode(_packageBodyMaxSize, _sendBuffer, package);
+					_packageEncoder.Encode(_packageBodyMaxSize, _encodeBuffer, package);
 				}
 
 				// 请求操作
-				_sendArgs.SetBuffer(0, _sendBuffer.ReadableBytes);
+				_sendArgs.SetBuffer(0, _encodeBuffer.ReadableBytes);
 				bool willRaiseEvent = _socket.SendAsync(_sendArgs);
 				if (!willRaiseEvent)
 				{
