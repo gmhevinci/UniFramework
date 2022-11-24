@@ -38,9 +38,9 @@ namespace UniFramework.Tween
 			{
 				// 创建驱动器
 				_isInitialize = true;
-				UnityEngine.GameObject driverGo = new UnityEngine.GameObject($"[{nameof(UniTween)}]");
-				driverGo.AddComponent<UniTweenDriver>();
-				UnityEngine.Object.DontDestroyOnLoad(driverGo);
+				UnityEngine.GameObject driver = new UnityEngine.GameObject($"[{nameof(UniTween)}]");
+				driver.AddComponent<UniTweenDriver>();
+				UnityEngine.Object.DontDestroyOnLoad(driver);
 			}
 		}
 
