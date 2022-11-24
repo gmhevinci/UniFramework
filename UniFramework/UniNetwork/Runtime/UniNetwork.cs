@@ -20,9 +20,9 @@ namespace UniFramework.Network
 			{
 				// 创建驱动器
 				_isInitialize = true;
-				UnityEngine.GameObject driverGo = new UnityEngine.GameObject($"[{nameof(UniNetwork)}]");
-				driverGo.AddComponent<UniNetworkDriver>();
-				UnityEngine.Object.DontDestroyOnLoad(driverGo);
+				UnityEngine.GameObject driver = new UnityEngine.GameObject($"[{nameof(UniNetwork)}]");
+				driver.AddComponent<UniNetworkDriver>();
+				UnityEngine.Object.DontDestroyOnLoad(driver);
 			}
 		}
 
