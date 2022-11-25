@@ -29,7 +29,7 @@ namespace UniFramework.Event
 		}
 
 		/// <summary>
-		/// 移除所有t缓存的监听
+		/// 移除所有缓存的监听
 		/// </summary>
 		public void RemoveAllListener()
 		{
