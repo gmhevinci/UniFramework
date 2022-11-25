@@ -3,47 +3,47 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UniFramework.Manager
+namespace UniFramework.Module
 {
-	public static class UniManager
+	public static class UniModule
 	{
-		private class ManagerWrapper
+		private class Wrapper
 		{
 			public int Priority { private set; get; }
-			public IManager Manager { private set; get; }
+			public IModule Module { private set; get; }
 
-			public ManagerWrapper(IManager manager, int priority)
+			public Wrapper(IModule module, int priority)
 			{
-				Manager = manager;
+				Module = module;
 				Priority = priority;
 			}
 		}
 
 		private static bool _isInitialize = false;
-		private static readonly List<ManagerWrapper> _managerList = new List<ManagerWrapper>(100);
+		private static readonly List<Wrapper> _wrappers = new List<Wrapper>(100);
 		private static MonoBehaviour _behaviour;
 		private static bool _isDirty = false;
 
 		/// <summary>
-		/// 初始化管理系统
+		/// 初始化模块系统
 		/// </summary>
 		public static void Initialize()
 		{
 			if (_isInitialize)
-				throw new Exception($"{nameof(UniManager)} is initialized !");
+				throw new Exception($"{nameof(UniModule)} is initialized !");
 
 			if (_isInitialize == false)
 			{
 				// 创建驱动器
 				_isInitialize = true;
-				GameObject driver = new UnityEngine.GameObject($"[{nameof(UniManager)}]");
-				_behaviour = driver.AddComponent<UniManagerDriver>();
+				GameObject driver = new UnityEngine.GameObject($"[{nameof(UniModule)}]");
+				_behaviour = driver.AddComponent<UniModuleDriver>();
 				UnityEngine.Object.DontDestroyOnLoad(driver);
 			}
 		}
 
 		/// <summary>
-		/// 更新管理系统
+		/// 更新模块系统
 		/// </summary>
 		internal static void Update()
 		{
@@ -51,7 +51,7 @@ namespace UniFramework.Manager
 			if (_isDirty)
 			{
 				_isDirty = false;
-				_managerList.Sort((left, right) =>
+				_wrappers.Sort((left, right) =>
 				{
 					if (left.Priority > right.Priority)
 						return -1;
@@ -62,15 +62,15 @@ namespace UniFramework.Manager
 				});
 			}
 
-			// 轮询所有管理器
-			for (int i = 0; i < _managerList.Count; i++)
+			// 轮询所有模块
+			for (int i = 0; i < _wrappers.Count; i++)
 			{
-				_managerList[i].Manager.OnUpdate();
+				_wrappers[i].Module.OnUpdate();
 			}
 		}
 
 		/// <summary>
-		/// 销毁管理系统
+		/// 销毁模块系统
 		/// </summary>
 		internal static void Destroy()
 		{
@@ -79,61 +79,61 @@ namespace UniFramework.Manager
 				_isInitialize = false;
 				DestroyAll();
 
-				UniLogger.Log($"{nameof(UniManager)} destroy all !");
+				UniLogger.Log($"{nameof(UniModule)} destroy all !");
 			}
 		}
 
 		/// <summary>
-		/// 获取管理器
+		/// 获取模块
 		/// </summary>
-		public static T GetManager<T>() where T : class, IManager
+		public static T GetModule<T>() where T : class, IModule
 		{
-			System.Type managerType = typeof(T);
-			for (int i = 0; i < _managerList.Count; i++)
+			System.Type type = typeof(T);
+			for (int i = 0; i < _wrappers.Count; i++)
 			{
-				if (_managerList[i].Manager.GetType() == managerType)
-					return _managerList[i].Manager as T;
+				if (_wrappers[i].Module.GetType() == type)
+					return _wrappers[i].Module as T;
 			}
 
-			UniLogger.Error($"Not found manager : {managerType}");
+			UniLogger.Error($"Not found manager : {type}");
 			return null;
 		}
 
 		/// <summary>
-		/// 查询管理器是否存在
+		/// 查询模块是否存在
 		/// </summary>
-		public static bool Contains<T>() where T : class, IManager
+		public static bool Contains<T>() where T : class, IModule
 		{
-			System.Type managerType = typeof(T);
-			for (int i = 0; i < _managerList.Count; i++)
+			System.Type type = typeof(T);
+			for (int i = 0; i < _wrappers.Count; i++)
 			{
-				if (_managerList[i].Manager.GetType() == managerType)
+				if (_wrappers[i].Module.GetType() == type)
 					return true;
 			}
 			return false;
 		}
 
 		/// <summary>
-		/// 创建管理器
+		/// 创建模块
 		/// </summary>
 		/// <param name="priority">运行时的优先级，优先级越大越早执行。如果没有设置优先级，那么会按照添加顺序执行</param>
-		public static T CreateManager<T>(int priority = 0) where T : class, IManager
+		public static T CreateModule<T>(int priority = 0) where T : class, IModule
 		{
-			return CreateManager<T>(null, priority);
+			return CreateModule<T>(null, priority);
 		}
 
 		/// <summary>
-		/// 创建管理器
+		/// 创建模块
 		/// </summary>
 		/// <param name="createParam">附加参数</param>
 		/// <param name="priority">运行时的优先级，优先级越大越早执行。如果没有设置优先级，那么会按照添加顺序执行</param>
-		public static T CreateManager<T>(System.Object createParam, int priority = 0) where T : class, IManager
+		public static T CreateModule<T>(System.Object createParam, int priority = 0) where T : class, IModule
 		{
 			if (priority < 0)
 				throw new Exception("The priority can not be negative");
 
 			if (Contains<T>())
-				throw new Exception($"Manager is already existed : {typeof(T)}");
+				throw new Exception($"Module is already existed : {typeof(T)}");
 
 			// 如果没有设置优先级
 			if (priority == 0)
@@ -142,26 +142,26 @@ namespace UniFramework.Manager
 				priority = --minPriority;
 			}
 
-			T manager = Activator.CreateInstance<T>();
-			ManagerWrapper wrapper = new ManagerWrapper(manager, priority);
-			wrapper.Manager.OnCreate(createParam);
-			_managerList.Add(wrapper);
+			T module = Activator.CreateInstance<T>();
+			Wrapper wrapper = new Wrapper(module, priority);
+			wrapper.Module.OnCreate(createParam);
+			_wrappers.Add(wrapper);
 			_isDirty = true;
-			return manager;
+			return module;
 		}
 
 		/// <summary>
-		/// 销毁管理器
+		/// 销毁模块
 		/// </summary>
-		public static bool DestroyManager<T>() where T : class, IManager
+		public static bool DestroyModule<T>() where T : class, IModule
 		{
-			var managerType = typeof(T);
-			for (int i = 0; i < _managerList.Count; i++)
+			var type = typeof(T);
+			for (int i = 0; i < _wrappers.Count; i++)
 			{
-				if (_managerList[i].Manager.GetType() == managerType)
+				if (_wrappers[i].Module.GetType() == type)
 				{
-					_managerList[i].Manager.OnDestroy();
-					_managerList.RemoveAt(i);
+					_wrappers[i].Module.OnDestroy();
+					_wrappers.RemoveAt(i);
 					return true;
 				}
 			}
@@ -203,20 +203,20 @@ namespace UniFramework.Manager
 		private static int GetMinPriority()
 		{
 			int minPriority = 0;
-			for (int i = 0; i < _managerList.Count; i++)
+			for (int i = 0; i < _wrappers.Count; i++)
 			{
-				if (_managerList[i].Priority < minPriority)
-					minPriority = _managerList[i].Priority;
+				if (_wrappers[i].Priority < minPriority)
+					minPriority = _wrappers[i].Priority;
 			}
 			return minPriority; //小于等于零
 		}
 		private static void DestroyAll()
 		{
-			for (int i = 0; i < _managerList.Count; i++)
+			for (int i = 0; i < _wrappers.Count; i++)
 			{
-				_managerList[i].Manager.OnDestroy();
+				_wrappers[i].Module.OnDestroy();
 			}
-			_managerList.Clear();
+			_wrappers.Clear();
 		}
 	}
 }

@@ -1,20 +1,20 @@
 ﻿
-namespace UniFramework.Manager
+namespace UniFramework.Module
 {
-	public interface IManager
+	public interface IModule
 	{
 		/// <summary>
-		/// 创建管理器
+		/// 创建模块
 		/// </summary>
 		void OnCreate(System.Object createParam);
 
 		/// <summary>
-		/// 更新管理器
+		/// 更新模块
 		/// </summary>
 		void OnUpdate();
 
 		/// <summary>
-		/// 销毁管理器
+		/// 销毁模块
 		/// </summary>
 		void OnDestroy();
 	}

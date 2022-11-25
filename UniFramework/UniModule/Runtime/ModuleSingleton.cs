@@ -1,7 +1,7 @@
 ﻿
-namespace UniFramework.Manager
+namespace UniFramework.Module
 {
-	public abstract class ManagerSingleton<T> where T : class, IManager
+	public abstract class ModuleSingleton<T> where T : class, IModule
 	{
 		private static T _instance;
 		public static T Instance
@@ -9,12 +9,12 @@ namespace UniFramework.Manager
 			get
 			{
 				if (_instance == null)
-					UniLogger.Error($"{typeof(T)} is not create. Use {nameof(UniManager)}.{nameof(UniManager.CreateManager)} create.");
+					UniLogger.Error($"{typeof(T)} is not create. Use {nameof(UniModule)}.{nameof(UniModule.CreateModule)} create.");
 				return _instance;
 			}
 		}
 
-		protected ManagerSingleton()
+		protected ModuleSingleton()
 		{
 			if (_instance != null)
 				throw new System.Exception($"{typeof(T)} instance already created.");
