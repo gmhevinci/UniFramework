@@ -133,7 +133,7 @@ namespace UniFramework.Machine
 			_curNode.OnEnter();
 		}
 
-		public IStateNode TryGetNode(string nodeName)
+		private IStateNode TryGetNode(string nodeName)
 		{
 			_nodes.TryGetValue(nodeName, out IStateNode result);
 			return result;
