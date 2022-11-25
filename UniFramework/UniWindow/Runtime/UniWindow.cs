@@ -250,13 +250,13 @@ namespace UniFramework.Window
 		/// <typeparam name="T">窗口类</typeparam>
 		/// <param name="location">资源定位地址</param>
 		/// <param name="userDatas">用户自定义数据</param>
-		public static OpenWindowOperation OpenWindowSync<T>(string location, System.Object[] userDatas) where T : UIWindow
+		public static OpenWindowOperation OpenWindowSync<T>(string location, params System.Object[] userDatas) where T : UIWindow
 		{
 			var operation = OpenWindowAsync(typeof(T), location, userDatas);
 			operation.WaitForAsyncComplete();
 			return operation;
 		}
-		public static OpenWindowOperation OpenWindowSync(Type type, string location, System.Object[] userDatas)
+		public static OpenWindowOperation OpenWindowSync(Type type, string location, params System.Object[] userDatas)
 		{
 			var operation = OpenWindowAsync(type, location, userDatas);
 			operation.WaitForAsyncComplete();

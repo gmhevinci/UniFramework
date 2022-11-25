@@ -22,6 +22,28 @@ namespace UniFramework.Window
 		private GraphicRaycaster[] _childRaycaster;
 
 		/// <summary>
+		/// 面板的Transfrom组件
+		/// </summary>
+		public Transform transform
+		{
+			get
+			{
+				return _panel.transform;
+			}
+		}
+
+		/// <summary>
+		/// 面板的游戏对象
+		/// </summary>
+		public GameObject gameObject
+		{
+			get
+			{
+				return _panel;
+			}
+		}
+		
+		/// <summary>
 		/// 窗口名称
 		/// </summary>
 		public string WindowName { private set; get; }
