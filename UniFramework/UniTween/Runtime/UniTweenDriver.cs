@@ -8,10 +8,5 @@ namespace UniFramework.Tween
 		{
 			UniTween.Update();
 		}
-
-		void OnDestroy()
-		{
-			UniTween.Destroy();
-		}
 	}
 }

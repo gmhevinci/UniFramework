@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace UniFramework.Tween
 {
@@ -11,6 +12,7 @@ namespace UniFramework.Tween
 	public static class UniTween
 	{
 		private static bool _isInitialize = false;
+		private static GameObject _driver = null;
 		private static readonly List<TweenHandle> _tweens = new List<TweenHandle>(1000);
 		private static readonly List<TweenHandle> _newer = new List<TweenHandle>(1000);
 		private static readonly List<TweenHandle> _remover = new List<TweenHandle>(1000);
@@ -38,9 +40,41 @@ namespace UniFramework.Tween
 			{
 				// 创建驱动器
 				_isInitialize = true;
-				UnityEngine.GameObject driver = new UnityEngine.GameObject($"[{nameof(UniTween)}]");
-				driver.AddComponent<UniTweenDriver>();
-				UnityEngine.Object.DontDestroyOnLoad(driver);
+				_driver = new GameObject($"[{nameof(UniTween)}]");
+				_driver.AddComponent<UniTweenDriver>();
+				UnityEngine.Object.DontDestroyOnLoad(_driver);
+				UniLogger.Log($"{nameof(UniTween)} initalize !");
+			}
+		}
+
+		/// <summary>
+		/// 销毁补间动画系统
+		/// </summary>
+		public static void Destroy()
+		{
+			if (_isInitialize)
+			{
+				foreach (var tween in _tweens)
+				{
+					tween.Dispose();
+				}
+				foreach (var tween in _newer)
+				{
+					tween.Dispose();
+				}
+				foreach (var tween in _remover)
+				{
+					tween.Dispose();
+				}
+
+				_tweens.Clear();
+				_newer.Clear();
+				_remover.Clear();
+
+				_isInitialize = false;
+				if (_driver != null)
+					GameObject.Destroy(_driver);
+				UniLogger.Log($"{nameof(UniTween)} destroy all !");
 			}
 		}
 
@@ -78,34 +112,6 @@ namespace UniFramework.Tween
 					_tweens.Remove(handle);
 				}
 				_remover.Clear();
-			}
-		}
-
-		/// <summary>
-		/// 销毁补间动画系统
-		/// </summary>
-		internal static void Destroy()
-		{
-			if (_isInitialize)
-			{
-				foreach (var tween in _tweens)
-				{
-					tween.Dispose();
-				}
-				foreach (var tween in _newer)
-				{
-					tween.Dispose();
-				}
-				foreach (var tween in _remover)
-				{
-					tween.Dispose();
-				}
-
-				_tweens.Clear();
-				_newer.Clear();
-				_remover.Clear();
-				_isInitialize = false;
-				UniLogger.Log($"{nameof(UniTween)} destroy all !");
 			}
 		}
 
