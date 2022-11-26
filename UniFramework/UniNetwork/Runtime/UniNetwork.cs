@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace UniFramework.Network
 {
 	public static class UniNetwork
 	{
 		private static bool _isInitialize = false;
+		private static GameObject _driver = null;
 		private readonly static List<TcpClient> _tcpClients = new List<TcpClient>();
 
 		/// <summary>
@@ -20,9 +22,30 @@ namespace UniFramework.Network
 			{
 				// 创建驱动器
 				_isInitialize = true;
-				UnityEngine.GameObject driver = new UnityEngine.GameObject($"[{nameof(UniNetwork)}]");
-				driver.AddComponent<UniNetworkDriver>();
-				UnityEngine.Object.DontDestroyOnLoad(driver);
+				_driver = new GameObject($"[{nameof(UniNetwork)}]");
+				_driver.AddComponent<UniNetworkDriver>();
+				UnityEngine.Object.DontDestroyOnLoad(_driver);
+				UniLogger.Log($"{nameof(UniNetwork)} initalize !");
+			}
+		}
+
+		/// <summary>
+		/// 销毁网络系统
+		/// </summary>
+		public static void Destroy()
+		{
+			if (_isInitialize)
+			{
+				foreach (var client in _tcpClients)
+				{
+					client.Destroy();
+				}
+				_tcpClients.Clear();
+
+				_isInitialize = false;
+				if (_driver != null)
+					GameObject.Destroy(_driver);
+				UniLogger.Log($"{nameof(UniNetwork)} destroy all !");
 			}
 		}
 
@@ -39,25 +62,6 @@ namespace UniFramework.Network
 				}
 			}
 		}
-
-		/// <summary>
-		/// 销毁网络系统
-		/// </summary>
-		internal static void Destroy()
-		{
-			if (_isInitialize)
-			{
-				foreach (var client in _tcpClients)
-				{
-					client.Destroy();
-				}
-
-				_tcpClients.Clear();
-				_isInitialize = false;
-				UniLogger.Log($"{nameof(UniNetwork)} destroy all !");
-			}
-		}
-
 
 		/// <summary>
 		/// 创建TCP客户端

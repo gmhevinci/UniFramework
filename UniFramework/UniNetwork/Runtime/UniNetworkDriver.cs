@@ -8,10 +8,5 @@ namespace UniFramework.Network
 		{
 			UniNetwork.Update();
 		}
-
-		void OnDestroy()
-		{
-			UniNetwork.Destroy();
-		}
 	}
 }
