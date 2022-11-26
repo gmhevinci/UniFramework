@@ -6,7 +6,7 @@ namespace UniFramework.Machine
 {
 	public class StateMachine
 	{
-		private readonly Dictionary<string, IStateNode> _nodes;
+		private readonly Dictionary<string, IStateNode> _nodes = new Dictionary<string, IStateNode>(100);
 		private IStateNode _curNode;
 		private IStateNode _preNode;
 
