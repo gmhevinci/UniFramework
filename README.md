@@ -15,6 +15,6 @@ Simple Code, Happy life ~ ~
 
 [UniMachine](./UniFramework/UniMachine)
 
-[UniModule](./UniFramework/UniModule)
+[UniSingleton](./UniFramework/UniSingleton)
 
 [UniWindow](./UniFramework/UniWindow)
