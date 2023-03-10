@@ -20,7 +20,7 @@ namespace UniFramework.Singleton
 				throw new System.Exception($"{typeof(T)} instance already created.");
 			_instance = this as T;
 		}
-		protected void DestroySingleton()
+		protected void DestroyInstance()
 		{
 			_instance = null;
 		}
