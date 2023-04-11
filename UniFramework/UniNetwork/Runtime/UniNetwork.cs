@@ -70,7 +70,7 @@ namespace UniFramework.Network
 		/// <param name="packageBodyMaxSize">网络包体最大长度</param>
 		public static TcpClient CreateTcpClient(int packageBodyMaxSize, INetPackageEncoder encoder, INetPackageDecoder decoder)
 		{
-			if (_isInitialize)
+			if (_isInitialize == false)
 				throw new Exception($"{nameof(UniNetwork)} not initialized !");
 
 			var client = new TcpClient(packageBodyMaxSize, encoder, decoder);
