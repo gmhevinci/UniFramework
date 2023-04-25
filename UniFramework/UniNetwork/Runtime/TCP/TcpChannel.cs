@@ -59,7 +59,7 @@ namespace UniFramework.Network
 			int decoderPakcageMaxSize = packageBodyMaxSize + _packageDecoder.GetPackageHeaderSize();
 			_encodeBuffer = new RingBuffer(encoderPackageMaxSize * 4);
 			_decodeBuffer = new RingBuffer(decoderPakcageMaxSize * 4);
-			_receiveBuffer = new byte[decoderPakcageMaxSize * 2];
+			_receiveBuffer = new byte[decoderPakcageMaxSize];
 
 			// 创建IOCP接收类
 			_receiveArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);

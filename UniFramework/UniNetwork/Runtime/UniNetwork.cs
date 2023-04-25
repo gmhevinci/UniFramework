@@ -66,7 +66,6 @@ namespace UniFramework.Network
 		/// <summary>
 		/// 创建TCP客户端
 		/// </summary>
-		/// <param name="packageCoderType">通信频道使用的网络包编码解码器类型</param>
 		/// <param name="packageBodyMaxSize">网络包体最大长度</param>
 		public static TcpClient CreateTcpClient(int packageBodyMaxSize, INetPackageEncoder encoder, INetPackageDecoder decoder)
 		{
