@@ -1,5 +1,5 @@
 {
-    "name": "UniNetwork",
+    "name": "UniFramework.Network",
     "rootNamespace": "",
     "references": [],
     "includePlatforms": [],
