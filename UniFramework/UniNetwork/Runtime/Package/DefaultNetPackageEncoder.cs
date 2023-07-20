@@ -9,15 +9,15 @@ namespace UniFramework.Network
 	public class DefaultNetPackageEncoder : INetPackageEncoder
 	{
 		private HandleErrorDelegate _handleErrorCallback;
-		private const int PackageHeaderLengthFiledSize = 4; //int类型
-		private const int PackageHeaderIDFiledSize = 4; //int类型
+		private const int HeaderMsgIDFiledSize = 4; //包头里的协议ID（int类型）
+		private const int HeaderMsgLengthFiledSize = 4; //包头里的包体长度（int类型）
 
 		/// <summary>
 		/// 获取包头的尺寸
 		/// </summary>
 		public int GetPackageHeaderSize()
 		{
-			return PackageHeaderLengthFiledSize + PackageHeaderIDFiledSize;
+			return HeaderMsgIDFiledSize + HeaderMsgLengthFiledSize;
 		}
 
 		/// <summary>
@@ -67,14 +67,12 @@ namespace UniFramework.Network
 				return;
 			}
 
-			// 写入长度
-			int packetLength = PackageHeaderIDFiledSize + bodyData.Length;
-			ringBuffer.WriteInt(packetLength);
-
 			// 写入包头
 			{
 				// 写入消息ID
 				ringBuffer.WriteInt(package.MsgID);
+				// 写入包体长度
+				ringBuffer.WriteInt(bodyData.Length);
 			}
 
 			// 写入包体
