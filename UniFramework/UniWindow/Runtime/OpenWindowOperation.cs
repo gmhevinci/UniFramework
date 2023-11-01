@@ -11,10 +11,10 @@ namespace UniFramework.Window
 			Done,
 		}
 
-		private readonly AssetOperationHandle _handle;
+		private readonly AssetHandle _handle;
 		private ESteps _steps = ESteps.None;
 		
-		internal OpenWindowOperation(AssetOperationHandle handle)
+		internal OpenWindowOperation(AssetHandle handle)
 		{
 			_handle = handle;
 		}
@@ -33,7 +33,7 @@ namespace UniFramework.Window
 				{
 					_steps = ESteps.Done;
 					Status = EOperationStatus.Failed;
-					Error = $"{nameof(AssetOperationHandle)} is invalid.";
+					Error = $"{nameof(AssetHandle)} is invalid.";
 					return;
 				}
 
@@ -44,13 +44,16 @@ namespace UniFramework.Window
 				{
 					_steps = ESteps.Done;
 					Status = EOperationStatus.Failed;
-					Error = $"{nameof(AssetOperationHandle.AssetObject)} is null.";
+					Error = $"{nameof(AssetHandle.AssetObject)} is null.";
 					return;
 				}
 
 				_steps = ESteps.Done;
 				Status = EOperationStatus.Succeed;
 			}
+		}
+		protected override void OnAbort()
+		{
 		}
 
 		/// <summary>

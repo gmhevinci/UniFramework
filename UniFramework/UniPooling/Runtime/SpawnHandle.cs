@@ -92,6 +92,9 @@ namespace UniFramework.Pooling
 				Status = EOperationStatus.Succeed;
 			}
 		}
+		protected override void OnAbort()
+		{
+		}
 
 		/// <summary>
 		/// 回收

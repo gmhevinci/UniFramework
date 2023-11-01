@@ -10,7 +10,7 @@ namespace UniFramework.Window
 		public const int WINDOW_HIDE_LAYER = 2; // Ignore Raycast
 		public const int WINDOW_SHOW_LAYER = 5; // UI
 
-		internal AssetOperationHandle Handle { private set; get;}
+		internal AssetHandle Handle { private set; get;}
 		private System.Action<UIWindow> _prepareCallback;
 		private System.Object[] _userDatas;
 
@@ -295,7 +295,7 @@ namespace UniFramework.Window
 			}
 		}
 
-		private void Handle_Completed(AssetOperationHandle handle)
+		private void Handle_Completed(AssetHandle handle)
 		{
 			if (handle.AssetObject == null)
 				return;

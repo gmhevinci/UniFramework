@@ -130,7 +130,7 @@ namespace UniFramework.Pooling
 			if (pool != null)
 			{
 				UniLogger.Warning($"GameObject pool is already existed : {location}");
-				var operation = new CreatePoolOperation(pool.AssetHandle);
+				var operation = new CreatePoolOperation(pool.Handle);
 				YooAssets.StartOperation(operation);
 				return operation;
 			}
@@ -140,7 +140,7 @@ namespace UniFramework.Pooling
 				pool.CreatePool(_package);
 				_gameObjectPools.Add(pool);
 
-				var operation = new CreatePoolOperation(pool.AssetHandle);
+				var operation = new CreatePoolOperation(pool.Handle);
 				YooAssets.StartOperation(operation);
 				return operation;
 			}

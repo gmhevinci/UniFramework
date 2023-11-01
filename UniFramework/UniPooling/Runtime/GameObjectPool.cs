@@ -19,7 +19,7 @@ namespace UniFramework.Pooling
 		/// <summary>
 		/// 资源句柄
 		/// </summary>
-		public AssetOperationHandle AssetHandle { private set; get; }
+		public AssetHandle Handle { private set; get; }
 
 		/// <summary>
 		/// 资源定位地址
@@ -69,12 +69,12 @@ namespace UniFramework.Pooling
 		public void CreatePool(ResourcePackage package)
 		{
 			// 加载游戏对象
-			AssetHandle = package.LoadAssetAsync<GameObject>(Location);
+			Handle = package.LoadAssetAsync<GameObject>(Location);
 
 			// 创建初始对象
 			for (int i = 0; i < _initCapacity; i++)
 			{
-				var operation = AssetHandle.InstantiateAsync(_root.transform);
+				var operation = Handle.InstantiateAsync(_root.transform);
 				operation.Completed += Operation_Completed;
 				_cacheOperations.Enqueue(operation);
 			}
@@ -95,8 +95,8 @@ namespace UniFramework.Pooling
 		public void DestroyPool()
 		{
 			// 卸载资源对象
-			AssetHandle.Release();
-			AssetHandle = null;
+			Handle.Release();
+			Handle = null;
 
 			// 销毁游戏对象
 			GameObject.Destroy(_root);
@@ -126,7 +126,7 @@ namespace UniFramework.Pooling
 		/// </summary>
 		public bool IsDestroyed()
 		{
-			return AssetHandle == null;
+			return Handle == null;
 		}
 
 		/// <summary>
@@ -190,7 +190,7 @@ namespace UniFramework.Pooling
 			if (forceClone == false && _cacheOperations.Count > 0)
 				operation = _cacheOperations.Dequeue();
 			else
-				operation = AssetHandle.InstantiateAsync();
+				operation = Handle.InstantiateAsync();
 
 			SpawnCount++;
 			SpawnHandle handle = new SpawnHandle(this, operation, parent, position, rotation, userDatas);
