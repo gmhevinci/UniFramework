@@ -2,18 +2,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UniFramework.Reference;
 
 namespace UniFramework.Event
 {
 	public static class UniEvent
 	{
-		private class PostWrapper
+		private class PostWrapper : IReference
 		{
 			public int PostFrame;
 			public int EventID;
 			public IEventMessage Message;
-
-			public void OnRelease()
+			
+			public void OnSpawn()
 			{
 				PostFrame = 0;
 				EventID = 0;
@@ -73,6 +74,7 @@ namespace UniFramework.Event
 				{
 					SendMessage(wrapper.EventID, wrapper.Message);
 					_postingList.RemoveAt(i);
+					UniReference.Release(wrapper);
 				}
 			}
 		}
@@ -180,6 +182,11 @@ namespace UniFramework.Event
 					currentNode = currentNode.Previous;
 				}
 			}
+
+			// 回收引用对象
+			IReference refClass = message as IReference;
+			if (refClass != null)
+				UniReference.Release(refClass);
 		}
 
 		/// <summary>
