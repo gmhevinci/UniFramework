@@ -20,10 +20,5 @@ namespace UniFramework.Tween
 		/// 已经完成
 		/// </summary>
 		Completed,
-
-		/// <summary>
-		/// 已被终止
-		/// </summary>
-		Abort,
 	}
 }

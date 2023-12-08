@@ -9,7 +9,5 @@ namespace UniFramework.Tween
 		ETweenStatus Status { get; }
 
 		void OnUpdate(float deltaTime);
-		void OnDispose();
-		void Abort();
 	}
 }

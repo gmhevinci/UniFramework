@@ -11,7 +11,6 @@ namespace UniFramework.Tween
 
 		private System.Action _onBegin = null;
 		private System.Action _onComplete = null;
-		private System.Action _onDispose = null;
 
 		/// <summary>
 		/// 节点状态
@@ -50,11 +49,6 @@ namespace UniFramework.Tween
 			_onComplete = onComplete;
 			return this;
 		}
-		public ITweenChain SetDispose(System.Action onDispose)
-		{
-			_onDispose = onDispose;
-			return this;
-		}
 
 		void ITweenNode.OnUpdate(float deltaTime)
 		{
@@ -73,23 +67,6 @@ namespace UniFramework.Tween
 					_onComplete?.Invoke();
 				}
 			}
-		}
-		void ITweenNode.OnDispose()
-		{
-			foreach (var node in _nodes)
-			{
-				node.OnDispose();
-			}
-			_nodes.Clear();
-			_onDispose?.Invoke();
-		}
-		void ITweenNode.Abort()
-		{
-			foreach (var node in _nodes)
-			{
-				node.Abort();
-			}
-			Status = ETweenStatus.Abort;
 		}
 
 		ITweenChain ITweenChain.Append(ITweenNode node)

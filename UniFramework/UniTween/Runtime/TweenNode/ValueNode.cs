@@ -35,7 +35,6 @@ namespace UniFramework.Tween
 		private System.Action<ValueType> _onUpdate = null;
 		private System.Action _onBegin = null;
 		private System.Action _onComplete = null;
-		private System.Action _onDispose = null;
 		protected TweenEaseDelegate _easeFun = null;
 		protected TweenLerpDelegate _lerpFun = null;
 
@@ -56,10 +55,6 @@ namespace UniFramework.Tween
 			_valueFrom = from;
 			_valueTo = to;
 			_easeFun = TweenEase.Linear.Default;
-		}
-		void ITweenNode.OnDispose()
-		{
-			_onDispose?.Invoke();
 		}
 		void ITweenNode.OnUpdate(float deltaTime)
 		{
@@ -131,10 +126,6 @@ namespace UniFramework.Tween
 					}
 				}
 			}
-		}
-		void ITweenNode.Abort()
-		{
-			Status = ETweenStatus.Abort;
 		}
 
 		public ValueNode<ValueType> SetRunningTime(float runingTime)
@@ -218,11 +209,6 @@ namespace UniFramework.Tween
 		public ValueNode<ValueType> SetOnComplete(System.Action onComplete)
 		{
 			_onComplete = onComplete;
-			return this;
-		}
-		public ValueNode<ValueType> SetOnDispose(System.Action onDispose)
-		{
-			_onDispose = onDispose;
 			return this;
 		}
 

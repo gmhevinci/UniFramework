@@ -9,8 +9,13 @@ namespace UniFramework.Tween
 		private readonly ITweenNode _tweenRoot;
 		private readonly UnityEngine.Object _unityObject;
 		private readonly bool _safeMode;
-		private bool _hasException = false;
+		private bool _isAbort = false;
 		internal int InstanceID { private set; get; }
+
+		/// <summary>
+		/// 句柄释放时的回调方法
+		/// </summary>
+		public System.Action OnDispose { set; get; } = null;
 
 		private TweenHandle()
 		{
@@ -39,20 +44,13 @@ namespace UniFramework.Tween
 			}
 			catch (System.Exception e)
 			{
-				_hasException = true;
-				UniLogger.Warning($"TweenNode has exception : {e}");
+				_isAbort = true;
+				UniLogger.Warning($"Tween exception : {e}");
 			}
 		}
 		internal void Dispose()
 		{
-			try
-			{
-				_tweenRoot.OnDispose();
-			}
-			catch(System.Exception e)
-			{
-				UniLogger.Warning($"TweenNode has exception : {e}");
-			}
+			OnDispose?.Invoke();
 		}
 		internal bool IsCanRemove()
 		{
@@ -60,20 +58,14 @@ namespace UniFramework.Tween
 			if (_safeMode)
 			{
 				if (_unityObject == null)
-				{
-					_tweenRoot.Abort();
 					return true;
-				}
 			}
 
 			// 检测运行过程是否发生异常
-			if (_hasException)
-			{
-				_tweenRoot.Abort();
+			if (_isAbort)
 				return true;
-			}
 
-			if (_tweenRoot.Status == ETweenStatus.Abort || _tweenRoot.Status == ETweenStatus.Completed)
+			if (_tweenRoot.Status == ETweenStatus.Completed)
 				return true;
 			else
 				return false;
@@ -84,7 +76,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public void Abort()
 		{
-			_tweenRoot.Abort();
+			_isAbort = true;
 		}
 	}
 }
