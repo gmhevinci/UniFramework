@@ -44,12 +44,5 @@ namespace UniFramework.Tween
 				}
 			}
 		}
-		void ITweenNode.OnDispose()
-		{
-		}
-		void ITweenNode.Abort()
-		{
-			Status = ETweenStatus.Abort;
-		}
 	}
 }
