@@ -39,6 +39,16 @@ namespace UniFramework.Tween
 		protected TweenLerpDelegate _lerpFun = null;
 
 		/// <summary>
+		/// 补间初始值
+		/// </summary>
+		public ValueType ValueFrom { get { return _valueFrom; } }
+
+		/// <summary>
+		/// 补间目标值
+		/// </summary>
+		public ValueType ValueTo { get { return _valueTo; } }
+
+		/// <summary>
 		/// 补间结果
 		/// </summary>
 		public ValueType Result { get; private set; }
@@ -58,13 +68,13 @@ namespace UniFramework.Tween
 		}
 		void ITweenNode.OnUpdate(float deltaTime)
 		{
-			if(Status == ETweenStatus.Idle)
-			{		
+			if (Status == ETweenStatus.Idle)
+			{
 				Status = ETweenStatus.Runing;
 				_onBegin?.Invoke();
 			}
 
-			if(Status == ETweenStatus.Runing)
+			if (Status == ETweenStatus.Runing)
 			{
 				_runningTime += (deltaTime * _timeReverse);
 				if (_duration > 0 && _runningTime > 0 && _runningTime < _duration)

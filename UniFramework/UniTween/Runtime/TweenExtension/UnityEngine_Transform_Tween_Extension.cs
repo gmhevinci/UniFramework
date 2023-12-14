@@ -96,7 +96,6 @@ namespace UnityEngine
 					else
 						obj.localEulerAngles = result;
 				});
-			node.SetLerp(TweenMath.AngleLerp);
 			return node;
 		}
 		public static Vector3Tween TweenAnglesTo(this Transform obj, float duration, Vector3 to, bool relativeWorld = false)
