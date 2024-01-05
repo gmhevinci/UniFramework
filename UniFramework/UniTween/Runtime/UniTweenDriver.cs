@@ -2,11 +2,11 @@
 
 namespace UniFramework.Tween
 {
-	internal class UniTweenDriver : MonoBehaviour
-	{
-		void Update()
-		{
-			UniTween.Update();
-		}
-	}
+    internal class UniTweenDriver : MonoBehaviour
+    {
+        void Update()
+        {
+            UniTween.Update();
+        }
+    }
 }

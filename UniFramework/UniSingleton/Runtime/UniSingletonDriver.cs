@@ -2,11 +2,11 @@
 
 namespace UniFramework.Singleton
 {
-	internal class UniSingletonDriver : MonoBehaviour
-	{
-		void Update()
-		{
-			UniSingleton.Update();
-		}
-	}
+    internal class UniSingletonDriver : MonoBehaviour
+    {
+        void Update()
+        {
+            UniSingleton.Update();
+        }
+    }
 }

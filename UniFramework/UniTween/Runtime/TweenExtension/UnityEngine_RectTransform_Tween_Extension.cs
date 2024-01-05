@@ -4,7 +4,7 @@ namespace UnityEngine
 {
     public static class UnityEngine_RectTransform_Tween_Extension
     {
-		public static Vector2Tween TweenAnchoredPosition(this RectTransform obj, float duration, Vector2 from, Vector2 to)
+        public static Vector2Tween TweenAnchoredPosition(this RectTransform obj, float duration, Vector2 from, Vector2 to)
         {
             Vector2Tween node = Vector2Tween.Allocate(duration, from, to);
             node.SetOnUpdate(

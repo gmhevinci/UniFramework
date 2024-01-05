@@ -2,11 +2,11 @@
 
 namespace UniFramework.Event
 {
-	internal class UniEventDriver : MonoBehaviour
-	{
-		void Update()
-		{
-			UniEvent.Update();
-		}
-	}
+    internal class UniEventDriver : MonoBehaviour
+    {
+        void Update()
+        {
+            UniEvent.Update();
+        }
+    }
 }

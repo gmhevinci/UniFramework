@@ -1,7 +1,7 @@
 ﻿
 namespace UniFramework.Event
 {
-	public interface IEventMessage
-	{
-	}
+    public interface IEventMessage
+    {
+    }
 }
