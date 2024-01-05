@@ -1,4 +1,5 @@
-﻿using UniFramework.Tween;
+﻿#if UNITY_2021_3_OR_NEWER
+using UniFramework.Tween;
 
 namespace UnityEngine
 {
@@ -16,8 +17,7 @@ namespace UnityEngine
 			ColorTween node = ColorTween.Allocate(duration, from, to);
 			node.SetOnUpdate((result) => { obj.SetColor(propertyID, result); });
 			return node;
-		}
-		
+		}	
 		public static FloatTween TweenFloatValue(this MaterialPropertyBlock obj, string property, float duration, float from, float to)
 		{
 			if (obj.HasProperty(property) == false)
@@ -33,3 +33,4 @@ namespace UnityEngine
 		}
 	}
 }
+#endif

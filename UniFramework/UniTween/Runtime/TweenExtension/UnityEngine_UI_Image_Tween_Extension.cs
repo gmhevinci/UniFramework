@@ -10,13 +10,29 @@ namespace UnityEngine.UI
             node.SetOnUpdate((result) => { obj.color = result; });
             return node;
         }
-        public static ColorTween TweenColorTo(this Image obj, float duration, Color to)
+        public static ColorTween TweenColorTo(this Image obj, float duration, Color to, bool setRuntimeValue = true)
         {
-            return TweenColor(obj, duration, obj.color, to);
+            ColorTween node = TweenColor(obj, duration, obj.color, to);
+            if (setRuntimeValue)
+            {
+                node.SetOnBegin(() =>
+                {
+                    node.SetValueFrom(obj.color);
+                });
+            }
+            return node;
         }
-        public static ColorTween TweenColorFrom(this Image obj, float duration, Color from)
+        public static ColorTween TweenColorFrom(this Image obj, float duration, Color from, bool setRuntimeValue = true)
         {
-            return TweenColor(obj, duration, from, obj.color);
+            ColorTween node = TweenColor(obj, duration, from, obj.color);
+            if (setRuntimeValue)
+            {
+                node.SetOnBegin(() =>
+                {
+                    node.SetValueTo(obj.color);
+                });
+            }
+            return node;
         }
     }
 }

@@ -8,7 +8,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain Execute(this ITweenChain chain, System.Action execute)
 		{
-			return chain.Append(UniTween.AllocateExecute(execute));
+			return chain.Append(UniTweenFactory.Execute(execute));
 		}
 
 		/// <summary>
@@ -16,7 +16,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain Until(this ITweenChain chain, System.Func<bool> condition)
 		{
-			return chain.Append(UniTween.AllocateUntil(condition));
+			return chain.Append(UniTweenFactory.Until(condition));
 		}
 
 
@@ -25,7 +25,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain AppendParallel(this ITweenChain chain, params ITweenNode[] nodes)
 		{
-			var node = UniTween.AllocateParallel(nodes);
+			var node = UniTweenFactory.Parallel(nodes);
 			chain.Append(node);
 			return chain;
 		}
@@ -35,7 +35,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain AppendSequence(this ITweenChain chain, params ITweenNode[] nodes)
 		{
-			var node = UniTween.AllocateSequence(nodes);
+			var node = UniTweenFactory.Sequence(nodes);
 			chain.Append(node);
 			return chain;
 		}
@@ -45,7 +45,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain AppendSelector(this ITweenChain chain, params ITweenNode[] nodes)
 		{
-			var node = UniTween.AllocateSelector(nodes);
+			var node = UniTweenFactory.Selector(nodes);
 			chain.Append(node);
 			return chain;
 		}
@@ -56,7 +56,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain SwitchToParallel(this ITweenChain chain, params ITweenNode[] nodes)
 		{
-			var node = UniTween.AllocateParallel(nodes);
+			var node = UniTweenFactory.Parallel(nodes);
 			chain.Append(node);
 			return node;
 		}
@@ -66,7 +66,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain SwitchToSequence(this ITweenChain chain, params ITweenNode[] nodes)
 		{
-			var node = UniTween.AllocateSequence(nodes);
+			var node = UniTweenFactory.Sequence(nodes);
 			chain.Append(node);
 			return node;
 		}
@@ -76,7 +76,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain SwitchToSelector(this ITweenChain chain, params ITweenNode[] nodes)
 		{
-			var node = UniTween.AllocateSelector(nodes);
+			var node = UniTweenFactory.Selector(nodes);
 			chain.Append(node);
 			return node;
 		}
@@ -87,7 +87,15 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain Delay(this ITweenChain chain, float delay, System.Action trigger = null)
 		{
-			return chain.Append(UniTween.AllocateDelay(delay, trigger));
+			return chain.Append(UniTweenFactory.Delay(delay, trigger));
+		}
+
+		/// <summary>
+		/// 持续计时节点
+		/// </summary>
+		public static ITweenChain Duration(this ITweenChain chain, float delay, float duration, System.Action trigger = null)
+		{
+			return chain.Append(UniTweenFactory.Duration(delay, duration, trigger));
 		}
 
 		/// <summary>
@@ -96,7 +104,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain Repeat(this ITweenChain chain, float delay, float interval, System.Action trigger = null)
 		{
-			return chain.Append(UniTween.AllocateRepeat(delay, interval, trigger));
+			return chain.Append(UniTweenFactory.Repeat(delay, interval, trigger));
 		}
 
 		/// <summary>
@@ -104,7 +112,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain Repeat(this ITweenChain chain, float delay, float interval, float duration, System.Action trigger = null)
 		{
-			return chain.Append(UniTween.AllocateRepeat(delay, interval, duration, trigger));
+			return chain.Append(UniTweenFactory.Repeat(delay, interval, duration, trigger));
 		}
 
 		/// <summary>
@@ -112,15 +120,7 @@ namespace UniFramework.Tween
 		/// </summary>
 		public static ITweenChain Repeat(this ITweenChain chain, float delay, float interval, long maxRepeatCount, System.Action trigger = null)
 		{
-			return chain.Append(UniTween.AllocateRepeat(delay, interval, maxRepeatCount, trigger));
-		}
-
-		/// <summary>
-		/// 持续计时节点
-		/// </summary>
-		public static ITweenChain Duration(this ITweenChain chain, float delay, float duration, System.Action trigger = null)
-		{
-			return chain.Append(UniTween.AllocateDuration(delay, duration, trigger));
+			return chain.Append(UniTweenFactory.Repeat(delay, interval, maxRepeatCount, trigger));
 		}
 	}
 }

@@ -14,13 +14,29 @@ namespace UnityEngine
                 });
             return node;
         }
-        public static Vector2Tween TweenAnchoredPositionTo(this RectTransform obj, float duration, Vector2 to)
+        public static Vector2Tween TweenAnchoredPositionTo(this RectTransform obj, float duration, Vector2 to, bool setRuntimeValue = true)
         {
-            return TweenAnchoredPosition(obj, duration, obj.anchoredPosition, to);
+            Vector2Tween node = TweenAnchoredPosition(obj, duration, obj.anchoredPosition, to);
+            if (setRuntimeValue)
+            {
+                node.SetOnBegin(() =>
+                {
+                    node.SetValueFrom(obj.anchoredPosition);
+                });
+            }
+            return node;
         }
-        public static Vector2Tween TweenAnchoredPositionFrom(this RectTransform obj, float duration, Vector2 from)
+        public static Vector2Tween TweenAnchoredPositionFrom(this RectTransform obj, float duration, Vector2 from, bool setRuntimeValue = true)
         {
-            return TweenAnchoredPosition(obj, duration, from, obj.anchoredPosition);
+            Vector2Tween node = TweenAnchoredPosition(obj, duration, from, obj.anchoredPosition);
+            if (setRuntimeValue)
+            {
+                node.SetOnBegin(() =>
+                {
+                    node.SetValueTo(obj.anchoredPosition);
+                });
+            }
+            return node;
         }
     }
 }
