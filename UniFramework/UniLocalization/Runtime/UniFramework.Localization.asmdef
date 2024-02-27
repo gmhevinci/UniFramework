@@ -1,0 +1,16 @@
+{
+    "name": "UniFramework.Localization",
+    "rootNamespace": "",
+    "references": [
+        "GUID:e168ba7048aa3904897471c4265f0162"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
