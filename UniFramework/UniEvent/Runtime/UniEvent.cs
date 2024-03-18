@@ -203,7 +203,7 @@ namespace UniFramework.Event
         /// </summary>
         public static void PostMessage(int eventId, IEventMessage message)
         {
-            var wrapper = new PostWrapper();
+            var wrapper = UniReference.Spawn<PostWrapper>();
             wrapper.PostFrame = UnityEngine.Time.frameCount;
             wrapper.EventID = eventId;
             wrapper.Message = message;
