@@ -49,9 +49,9 @@ namespace UniFramework.Network
             // 创建编码解码器	
             _packageBodyMaxSize = packageBodyMaxSize;
             _packageEncoder = encoder;
-            _packageEncoder.RigistHandleErrorCallback(HandleError);
+            _packageEncoder.RegisterHandleErrorCallback(HandleError);
             _packageDecoder = decoder;
-            _packageDecoder.RigistHandleErrorCallback(HandleError);
+            _packageDecoder.RegisterHandleErrorCallback(HandleError);
 
             // 创建字节缓冲类
             // 注意：字节缓冲区长度，推荐4倍最大包体长度

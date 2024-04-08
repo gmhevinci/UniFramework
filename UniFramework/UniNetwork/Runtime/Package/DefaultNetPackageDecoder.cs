@@ -23,8 +23,7 @@ namespace UniFramework.Network
         /// <summary>
         /// 注册异常错误回调方法
         /// </summary>
-        /// <param name="callback"></param>
-        public void RigistHandleErrorCallback(HandleErrorDelegate callback)
+        public void RegisterHandleErrorCallback(HandleErrorDelegate callback)
         {
             _handleErrorCallback = callback;
         }
