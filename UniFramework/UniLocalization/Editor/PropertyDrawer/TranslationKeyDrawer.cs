@@ -30,9 +30,10 @@ namespace UniFramework.Localization.Editor
 
         private void ShowPicker(Rect dropDownPosition, SerializedProperty property)
         {
-            var treeSelection = new TranslationKeyTreeView((key) =>
+            var component = property.serializedObject.targetObject as Component;
+            var bhv = component.GetComponent<LocalizedBehaviour>();
+            var treeView = new TranslationKeyTreeView(bhv.DataTableName, (key) =>
             {
-                Debug.Log(key);
                 if(string.IsNullOrEmpty(key) == false)
                 {
                     property.stringValue = key;
@@ -40,7 +41,7 @@ namespace UniFramework.Localization.Editor
                 }
             });
 
-            PopupWindow.Show(dropDownPosition, new TreeViewPopupWindow(treeSelection) { Width = dropDownPosition.width });
+            PopupWindow.Show(dropDownPosition, new TreeViewPopupWindow(treeView) { Width = dropDownPosition.width });
         }
     }
 }

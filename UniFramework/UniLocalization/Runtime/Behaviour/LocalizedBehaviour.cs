@@ -87,6 +87,7 @@ namespace UniFramework.Localization
         /// </summary>
         protected abstract void OnTranslation(ITranslation translation);
 
+        /*
 #if UNITY_EDITOR
         protected virtual void OnValidate()
         {
@@ -96,5 +97,6 @@ namespace UniFramework.Localization
             }
         }
 #endif
+        */
     }
 }

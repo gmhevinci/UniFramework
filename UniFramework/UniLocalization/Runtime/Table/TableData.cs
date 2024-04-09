@@ -5,15 +5,29 @@ namespace UniFramework.Localization
 {
     public class TableData
     {
-        // 数据集合
         private readonly Dictionary<string, object> _datas = null;
 
-        public TableData(int capacity)
+        /// <summary>
+        /// 数据表名称
+        /// </summary>
+        public string TableName { private set; get; }
+
+        /// <summary>
+        /// 文化编码
+        /// </summary>
+        public string CultureCode { private set; get; }
+
+
+        public TableData(string tableName, string cultureCode, int capacity)
         {
+            TableName = tableName;
+            CultureCode = cultureCode;
             _datas = new Dictionary<string, object>(capacity);
         }
-        public TableData(Dictionary<string, object> datas)
+        public TableData(string tableName, string cultureCode, Dictionary<string, object> datas)
         {
+            TableName = tableName;
+            CultureCode = cultureCode;
             _datas = datas;
         }
 
@@ -22,6 +36,11 @@ namespace UniFramework.Localization
         /// </summary>
         public void AddValue(string key, object value)
         {
+            if (_datas.ContainsKey(key))
+            {
+                UniLogger.Warning($"The key already existed : {key}");
+                return;
+            }
             _datas.Add(key, value);
         }
 

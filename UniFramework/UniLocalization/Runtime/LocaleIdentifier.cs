@@ -15,12 +15,12 @@ namespace UniFramework.Localization
         /// <summary>
         /// 文化唯一编码
         /// </summary>
-        public string Code { get; private set; }
+        public string CultureCode { get; private set; }
 
         public LocaleIdentifier(SystemLanguage systemLanguage)
         {
-            Code = GetSystemLanguageCultureCode(systemLanguage);
-            Culture = CultureInfo.GetCultureInfo(Code);
+            CultureCode = GetSystemLanguageCultureCode(systemLanguage);
+            Culture = CultureInfo.GetCultureInfo(CultureCode);
         }
 
         public static string GetSystemLanguageCultureCode(SystemLanguage lang)

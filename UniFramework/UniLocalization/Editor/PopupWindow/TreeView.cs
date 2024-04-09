@@ -10,6 +10,7 @@ namespace UniFramework.Localization.Editor
 {
     internal class TranslationKeyTreeView : TreeView
     {
+        protected string _tableName;
         protected Action<string> _selectionHandler;
 
         public TreeViewItem Root { get; private set; }
@@ -21,9 +22,10 @@ namespace UniFramework.Localization.Editor
             this.showBorder = true;
         }
 
-        public TranslationKeyTreeView(Action<string> selectionHandler)
+        public TranslationKeyTreeView(string tableName, Action<string> selectionHandler)
             : this()
         {
+            _tableName = tableName;
             _selectionHandler = selectionHandler;
             this.showAlternatingRowBackgrounds = true;
             this.showBorder = true;
@@ -35,18 +37,23 @@ namespace UniFramework.Localization.Editor
         protected override TreeViewItem BuildRoot()
         {
             Root = new TreeViewItem(-1, -1);
-            var id = 1;
 
-            Root.AddChild(new TranslationKeyTreeViewItem("None", id++, 0) { displayName = $"None" });
-            Root.AddChild(new TranslationKeyTreeViewItem("None2", id++, 0) { displayName = $"None2" });
+            var readerInstance = LocalizationSettingData.GetLocalizeReader(_tableName);
+            if (readerInstance != null)
+            {
+                int itemID = 1;
+                foreach (var key in readerInstance.Keys)
+                {
+                    Root.AddChild(new TranslationKeyTreeViewItem(key, itemID++, 0) { displayName = key });
+                }
+            }
 
-            if (!Root.hasChildren)
+            if (Root.hasChildren == false)
             {
                 Root.AddChild(new TreeViewItem(1, 0, "No Tables Found."));
             }
 
             SetupDepthsFromParentsAndChildren(Root);
-
             return Root;
         }
 

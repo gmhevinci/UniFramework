@@ -48,7 +48,6 @@ namespace UniFramework.Localization
         {
             if (_isInitialize)
             {
-
             }
         }
 
@@ -59,7 +58,7 @@ namespace UniFramework.Localization
         {
             foreach (var locale in _locales)
             {
-                if (locale.Code == cultureCode)
+                if (locale.CultureCode == cultureCode)
                 {
                     _currentLocale = locale;
                     OnLocalizationChanged.Invoke();
@@ -79,9 +78,30 @@ namespace UniFramework.Localization
         }
 
         /// <summary>
+        /// 添加数据表
+        /// </summary>
+        public static void AddTableData(TableData tableData)
+        {
+            var collection = GetOrCreateCollection(tableData.TableName);
+            collection.AddTableData(tableData.CultureCode, tableData);
+        }
+
+        /// <summary>
+        /// 获取本地化数据
+        /// </summary>
+        public static object GetLocalizeValue(string tableName, string translationKey)
+        {
+            var tableCollection = GetOrCreateCollection(tableName);
+            var tableData = tableCollection.GetTableData(_currentLocale.CultureCode);
+            if (tableData == null)
+                return null;
+            return tableData.GetValue(translationKey);
+        }
+
+        /// <summary>
         /// 获取翻译器的实例
         /// </summary>
-        public static ITranslation GetOrCreateTranslation(System.Type translationType)
+        internal static ITranslation GetOrCreateTranslation(System.Type translationType)
         {
             if (translationType == null)
                 return null;
@@ -101,34 +121,20 @@ namespace UniFramework.Localization
         }
 
         /// <summary>
-        /// 添加数据集合
+        /// 获取数据收集器
         /// </summary>
-        public static void AddTableCollection(TableCollection collection)
+        internal static TableCollection GetOrCreateCollection(string tableName)
         {
-            _tableCollections.Add(collection.TableName, collection);
-        }
-
-        /// <summary>
-        /// 获取数据集合
-        /// </summary>
-        public static TableCollection GetTableCollection(string tableName)
-        {
-            if (_tableCollections.ContainsKey(tableName) == false)
+            if (_tableCollections.TryGetValue(tableName, out var collection))
             {
-                UniLogger.Error($"Not found table collection : {tableName}");
-                return null;
+                return collection;
             }
-
-            return _tableCollections[tableName];
-        }
-
-        /// <summary>
-        /// 获取数据
-        /// </summary>
-        public static object GetTableDataValue(string tableName, string translationKey)
-        {
-            var tableData = _tableCollections[tableName].GetTableData(_currentLocale.Code);
-            return tableData.GetValue(translationKey);
+            else
+            {
+                collection = new TableCollection(tableName);
+                _tableCollections.Add(tableName, collection);
+                return collection;
+            }
         }
     }
 }

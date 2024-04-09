@@ -1,0 +1,20 @@
+{
+    "name": "UniFramework.Localization.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:e168ba7048aa3904897471c4265f0162",
+        "GUID:7815d60d16b60414f9d85833b64e743c",
+        "GUID:4d1926c9df5b052469a1c63448b7609a"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -26,11 +26,11 @@ namespace UniFramework.Localization.Editor
         private void ShowMenu(Rect right, SerializedProperty property)
         {
             var menu = new GenericMenu();
-            foreach (var tableName in LocalizationSettingData.Setting.TableNames)
+            foreach (var tableSetting in LocalizationSettingData.Setting.TableSettings)
             {
-                menu.AddItem(new GUIContent(tableName), property.stringValue == tableName, () =>
+                menu.AddItem(new GUIContent(tableSetting.TableName), property.stringValue == tableSetting.TableName, () =>
                 {
-                    property.stringValue = tableName;
+                    property.stringValue = tableSetting.TableName;
                     property.serializedObject.ApplyModifiedProperties();
                 });
             }

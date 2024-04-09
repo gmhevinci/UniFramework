@@ -3,16 +3,24 @@ using System.Collections.Generic;
 
 namespace UniFramework.Localization
 {
-    public class TableCollection
+    internal class TableCollection
     {
-        // 数据表集合
-        // 说明：Key为地区文化编码
+        /// <summary>
+        /// 数据表集合
+        /// 说明：Key为地区文化编码
+        /// </summary>
         private readonly Dictionary<string, TableData> _tables = new Dictionary<string, TableData>(1000);
 
         /// <summary>
         /// 数据表名称
         /// </summary>
-        public string TableName { protected set; get; }
+        public string TableName { private set; get; }
+
+
+        public TableCollection(string tableName)
+        {
+            TableName = tableName;
+        }
 
         /// <summary>
         /// 获取表格数据
@@ -21,7 +29,7 @@ namespace UniFramework.Localization
         {
             if (_tables.ContainsKey(cultureCode) == false)
             {
-                UniLogger.Error($"Not found table data : {cultureCode}");
+                UniLogger.Error($"Not found table data : {TableName} {cultureCode}");
                 return null;
             }
             return _tables[cultureCode];
