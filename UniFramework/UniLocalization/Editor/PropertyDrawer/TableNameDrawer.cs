@@ -8,9 +8,9 @@ namespace UniFramework.Localization.Editor
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            var left = position; left.xMax -= 40;
-            var right = position; right.xMin = left.xMax + 2;
-            var color = GUI.color;
+            Rect left = position; left.xMax -= 40;
+            Rect right = position; right.xMin = left.xMax + 2;
+            Color color = GUI.color;
 
             EditorGUI.BeginDisabledGroup(true);
             EditorGUI.PropertyField(left, property);
@@ -19,23 +19,30 @@ namespace UniFramework.Localization.Editor
             GUI.color = color;
             if (GUI.Button(right, "List") == true)
             {
-				var menu = new GenericMenu();
+                ShowMenu(right, property);
+            }
+        }
 
-				foreach (var tableName in LocalizationSettingData.Setting.TableNames)
-				{
-					menu.AddItem(new GUIContent(tableName), property.stringValue == tableName, () => { property.stringValue = tableName; property.serializedObject.ApplyModifiedProperties(); });
-				}
+        private void ShowMenu(Rect right, SerializedProperty property)
+        {
+            var menu = new GenericMenu();
+            foreach (var tableName in LocalizationSettingData.Setting.TableNames)
+            {
+                menu.AddItem(new GUIContent(tableName), property.stringValue == tableName, () =>
+                {
+                    property.stringValue = tableName;
+                    property.serializedObject.ApplyModifiedProperties();
+                });
+            }
 
-				if (menu.GetItemCount() > 0)
-				{
-					menu.DropDown(right);
-				}
-				else
-				{
-					Debug.LogWarning("Your scene doesn't contain any phrases, so the phrase name list couldn't be created.");
-				}
-			}
+            if (menu.GetItemCount() > 0)
+            {
+                menu.DropDown(right);
+            }
+            else
+            {
+                Debug.LogWarning($"Not found any table names ! Please check {nameof(LocalizationSetting)}");
+            }
         }
     }
 }
-
