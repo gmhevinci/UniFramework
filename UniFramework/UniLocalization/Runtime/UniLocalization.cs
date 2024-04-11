@@ -103,6 +103,9 @@ namespace UniFramework.Localization
         /// </summary>
         internal static ITranslation GetOrCreateTranslation(System.Type translationType)
         {
+            if (_isInitialize == false)
+                return null;
+
             if (translationType == null)
                 return null;
 
