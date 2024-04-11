@@ -132,7 +132,7 @@ namespace UniFramework.Log
 
                 if (string.IsNullOrWhiteSpace(fileName)) continue;
 
-                fileName = fileName.Split("-")[0];
+                fileName = fileName.Split('-')[0];
 
                 if (DateTime.TryParseExact(fileName, TimeFormat2, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime expiryDate))
                 {
