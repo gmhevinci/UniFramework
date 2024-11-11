@@ -76,10 +76,9 @@ namespace UniFramework.Machine
         /// <summary>
         /// 加入一个节点
         /// </summary>
-        public void AddNode<TNode>() where TNode : IStateNode
+        public void AddNode<TNode>() where TNode : IStateNode, new()
         {
-            var nodeType = typeof(TNode);
-            var stateNode = Activator.CreateInstance(nodeType) as IStateNode;
+            TNode stateNode = new TNode();
             AddNode(stateNode);
         }
         public void AddNode(IStateNode stateNode)
