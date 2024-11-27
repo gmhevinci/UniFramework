@@ -3,7 +3,7 @@ Unity game development framework
 
 Simple Code, Happy life ~ ~
 
-该库仅供源码级学习，日程不做稳定性维护。
+该库仅供源码级学习，不做长期版本维护。
 
 [UniAnimation](./UniFramework/UniAnimation)
 
