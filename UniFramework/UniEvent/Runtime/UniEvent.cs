@@ -42,6 +42,7 @@ namespace UniFramework.Event
         {
             private readonly Type _eventType;
             private readonly List<Listener> _subscribers = new List<Listener>(100);
+            private bool _isPublishing = false;
 
             public EventWrapper(Type eventType)
             {
@@ -85,59 +86,82 @@ namespace UniFramework.Event
             }
             public void Trigger(IEventMessage message)
             {
+                // 检测递归广播行为
+                if (_isPublishing)
+                {
+                    UniLogger.Error($"Event {_eventType.FullName} is already broadcasting. Recursive Publish is not allowed.");
+
+                    // 回收事件对象
+                    if (message is IReference refClass)
+                        UniReference.Release(refClass);
+
+                    // 直接返回
+                    return;
+                }
+
+                _isPublishing = true;
+                try
+                {
+                    if (BroadcastOrder == EBroadcastOrder.Normal)
+                    {
+                        NormalBroadcast(message);
+                    }
+                    else if (BroadcastOrder == EBroadcastOrder.Reverse)
+                    {
+                        ReverseBroadcast(message);
+                    }
+                    else
+                    {
+                        throw new System.NotImplementedException(BroadcastOrder.ToString());
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                }
+                finally
+                {
+                    _isPublishing = false;
+
+                    // 回收消息对象
+                    if (message is IReference refClass)
+                        UniReference.Release(refClass);
+                }
+            }
+            public void Clear()
+            {
+                foreach (var listener in _subscribers)
+                {
+                    UniReference.Release(listener);
+                }
+                _subscribers.Clear();
+                _isPublishing = false;
+            }
+
+            private void NormalBroadcast(IEventMessage message)
+            {
                 bool isDirty = false;
 
-                if (BroadcastOrder == EBroadcastOrder.Normal)
+                // 注意：过程中新注册的订阅不起效！
+                int count = _subscribers.Count;
+                for (int i = 0; i < count; i++)
                 {
-                    // 注意：过程中新注册的订阅不起效！
-                    int count = _subscribers.Count;
-                    for (int i = 0; i < count; i++)
+                    var listener = _subscribers[i];
+                    if (listener.IsDestroyed)
                     {
-                        var listener = _subscribers[i];
-                        if (listener.IsDestroyed)
-                        {
-                            isDirty = true;
-                            continue;
-                        }
-
-                        try
-                        {
-                            if (listener.Callback != null)
-                                listener.Callback.Invoke(message);
-                        }
-                        catch (Exception ex)
-                        {
-                            UniLogger.Error($"Event {_eventType.FullName} listener threw exception: {ex.Message} {ex.StackTrace}");
-                        }
+                        isDirty = true;
+                        continue;
                     }
-                }
-                else if (BroadcastOrder == EBroadcastOrder.Reverse)
-                {
-                    // 注意：过程中新注册的订阅不起效！
-                    int count = _subscribers.Count;
-                    for (int i = count - 1; i >= 0; i--)
+
+                    try
                     {
-                        var listener = _subscribers[i];
-                        if (listener.IsDestroyed)
-                        {
-                            isDirty = true;
-                            continue;
-                        }
-
-                        try
-                        {
-                            if (listener.Callback != null)
-                                listener.Callback.Invoke(message);
-                        }
-                        catch (Exception ex)
-                        {
-                            UniLogger.Error($"Event {_eventType.FullName} listener threw exception: {ex.Message} {ex.StackTrace}");
-                        }
+                        if (listener.Callback != null)
+                            listener.Callback.Invoke(message);
                     }
-                }
-                else
-                {
-                    throw new System.NotImplementedException(BroadcastOrder.ToString());
+                    catch (Exception ex)
+                    {
+                        UniLogger.Error($"Event {_eventType.FullName} listener threw exception: {ex.Message} {ex.StackTrace}");
+                    }
                 }
 
                 // 移除销毁对象
@@ -153,18 +177,46 @@ namespace UniFramework.Event
                         }
                     }
                 }
-
-                // 回收消息对象
-                if (message is IReference refClass)
-                    UniReference.Release(refClass);
             }
-            public void Clear()
+            private void ReverseBroadcast(IEventMessage message)
             {
-                foreach (var listener in _subscribers)
+                bool isDirty = false;
+
+                // 注意：过程中新注册的订阅不起效！
+                int count = _subscribers.Count;
+                for (int i = count - 1; i >= 0; i--)
                 {
-                    UniReference.Release(listener);
+                    var listener = _subscribers[i];
+                    if (listener.IsDestroyed)
+                    {
+                        isDirty = true;
+                        continue;
+                    }
+
+                    try
+                    {
+                        if (listener.Callback != null)
+                            listener.Callback.Invoke(message);
+                    }
+                    catch (Exception ex)
+                    {
+                        UniLogger.Error($"Event {_eventType.FullName} listener threw exception: {ex.Message} {ex.StackTrace}");
+                    }
                 }
-                _subscribers.Clear();
+
+                // 移除销毁对象
+                if (isDirty)
+                {
+                    for (int i = _subscribers.Count - 1; i >= 0; i--)
+                    {
+                        var listener = _subscribers[i];
+                        if (listener.IsDestroyed)
+                        {
+                            _subscribers.RemoveAt(i);
+                            UniReference.Release(listener);
+                        }
+                    }
+                }
             }
         }
 
