@@ -117,7 +117,7 @@ namespace UniFramework.Event
                 }
                 catch (Exception ex)
                 {
-
+                    UniLogger.Error($"Fatal exception : {ex.Message} {ex.StackTrace}");
                 }
                 finally
                 {
